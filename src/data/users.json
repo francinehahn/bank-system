@@ -1,0 +1,23 @@
+[
+    {
+        "id": "001",
+        "name": "Francine Hahn",
+        "cpf": "00985662110",
+        "birth_date": "1991-06-04",
+        "balance": 20000
+    },
+    {
+        "id": "002",
+        "name": "Giovana Inez Vieira",
+        "cpf": "12345678910",
+        "birth_date": "1999-01-12",
+        "balance": 30000
+    },
+    {
+        "id": "003",
+        "name": "Maria Fernandez",
+        "cpf": "55012342910",
+        "birth_date": "1995-07-10",
+        "balance": 15000
+    }
+]
