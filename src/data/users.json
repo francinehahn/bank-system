@@ -19,5 +19,33 @@
         "cpf": "55012342910",
         "birth_date": "1995-07-10",
         "balance": 15000
+    },
+    {
+        "id": "004",
+        "name": "Gustavo Mendes",
+        "cpf": "75691253411",
+        "birth_date": "1989-12-22",
+        "balance": 1000
+    },
+    {
+        "id": "005",
+        "name": "Lucas Soares",
+        "cpf": "89656213421",
+        "birth_date": "1972-04-13",
+        "balance": 8000
+    },
+    {
+        "id": "006",
+        "name": "Laura Boeira",
+        "cpf": "00213252331",
+        "birth_date": "1992-07-15",
+        "balance": 3000
+    },
+    {
+        "id": "007",
+        "name": "Enzo Angeli",
+        "cpf": "008963365120",
+        "birth_date": "2001-10-03",
+        "balance": 2500
     }
 ]
