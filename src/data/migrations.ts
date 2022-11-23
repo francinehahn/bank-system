@@ -5,31 +5,31 @@ import statements from "./statements.json"
 const printError = (error: any) => console.log(error.sqlMessage || error.message)
 
 const createTables = () => connection.raw(`
-    CREATE TABLE IF NOT EXISTS Users (
-        id VARCHAR(20) PRIMARY KEY,
-        name VARCHAR(180) NOT NULL,
-        cpf VARCHAR(11) UNIQUE NOT NULL,
+    CREATE TABLE IF NOT EXISTS BankClients (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(80) NOT NULL,
+        cpf CHAR(11) UNIQUE NOT NULL,
         birth_date DATE NOT NULL,
         balance BIGINT NOT NULL
     );
 
-    CREATE TABLE IF NOT EXISTS Statements (
-        id VARCHAR(255) PRIMARY KEY,
-        value INT(11) NOT NULL,
+    CREATE TABLE IF NOT EXISTS BankStatements (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        value INT NOT NULL,
         date DATE NOT NULL,
-        description TEXT(255)
-        user_id VARCHAR(20),
-        FOREIGN KEY(user_id) REFERENCES Users(id)
+        description TEXT(100),
+        user_statement INT,
+        FOREIGN KEY(user_statement) REFERENCES BankClients(id)
     );
 `).then(() => console.log('Tabela criada.')).catch(printError)
 
 
-const insertUsers = () => connection("Users")
+const insertUsers = () => connection("BankClients")
    .insert(users)
    .then(() => console.log("Usuários adicionados"))
    .catch(printError)
 
-const insertStatements = () => connection("Statements")
+const insertStatements = () => connection("BankStatements")
    .insert(statements)
    .then(() => console.log("Statements adicionados"))
    .catch(printError)

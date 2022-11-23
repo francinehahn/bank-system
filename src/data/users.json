@@ -1,50 +1,50 @@
 [
     {
-        "id": "001",
+        "id": 1,
         "name": "Francine Hahn",
         "cpf": "00985662110",
         "birth_date": "1991-06-04",
         "balance": 20000
     },
     {
-        "id": "002",
+        "id": 2,
         "name": "Giovana Inez Vieira",
         "cpf": "12345678910",
         "birth_date": "1999-01-12",
         "balance": 30000
     },
     {
-        "id": "003",
+        "id": 3,
         "name": "Maria Fernandez",
         "cpf": "55012342910",
         "birth_date": "1995-07-10",
         "balance": 15000
     },
     {
-        "id": "004",
+        "id": 4,
         "name": "Gustavo Mendes",
         "cpf": "75691253411",
         "birth_date": "1989-12-22",
         "balance": 1000
     },
     {
-        "id": "005",
+        "id": 5,
         "name": "Lucas Soares",
         "cpf": "89656213421",
         "birth_date": "1972-04-13",
         "balance": 8000
     },
     {
-        "id": "006",
+        "id": 6,
         "name": "Laura Boeira",
         "cpf": "00213252331",
         "birth_date": "1992-07-15",
         "balance": 3000
     },
     {
-        "id": "007",
+        "id": 7,
         "name": "Enzo Angeli",
-        "cpf": "008963365120",
+        "cpf": "00896336510",
         "birth_date": "2001-10-03",
         "balance": 2500
     }

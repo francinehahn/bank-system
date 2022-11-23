@@ -13,29 +13,28 @@ import { updateBalance } from './endpoints/updateBalance'
 app.get("/users", getAllUsers)
 
 
-// Create Bank Account 
-app.post("/users", createBankAccount)
-
-
-// Delete bank account
-app.delete('/users/:id', deleteBankAccount)
-
-
-// Make a payment
-app.post("/users/payment", makePayments)
-
-
-// Update Balance
-app.put("/users/balance", updateBalance)
-
-
 // Get Account Balance
 app.get("/users/balance", getAccountBalance)
 
 
+// Create Bank Account 
+app.post("/users", createBankAccount)
+
+
+// Make a payment
+//app.put("/users/payment", makePayments)
+
+
 // Add Balance
-app.put("/users/add/balance", addBalance) 
+//app.put("/users/add/balance", addBalance)
+
+
+// Update Balance
+//app.put("/users/balance", updateBalance)
 
 
 // Bank transfer
-app.patch("/users/transfer", bankTransfer)
+//app.patch("/users/transfer", bankTransfer)
+
+// Delete bank account
+//app.delete('/users/:id', deleteBankAccount)

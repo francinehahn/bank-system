@@ -1,5 +1,4 @@
 import {Request, Response} from 'express'
-import { userAccounts } from '../data/data'
 
 
 export const addBalance = async (req: Request, res: Response) => {
