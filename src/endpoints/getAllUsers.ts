@@ -1,6 +1,7 @@
 import {Request, Response} from 'express'
 import { connection } from '../data/connection'
 
+//Function that return all user in the database
 const selectAllUses = async () => {
     const result = await connection.raw(`
         SELECT * FROM BankClients;
@@ -9,6 +10,7 @@ const selectAllUses = async () => {
     return result[0]
 }
 
+//Endpoint
 export const getAllUsers = async (req: Request, res: Response) => {
     let errorCode= 400
 

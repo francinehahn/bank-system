@@ -2,6 +2,7 @@ import {Request, Response} from 'express'
 import { connection } from '../data/connection'
 
 
+//Function that returns the balance from a user
 const selectBalance = async (cpf: string) => {
     const result = await connection.raw(`
         SELECT balance FROM BankClients WHERE cpf = '${cpf}';
@@ -10,6 +11,7 @@ const selectBalance = async (cpf: string) => {
     return result[0][0]
 }
 
+//Endpoint
 export const getAccountBalance = async (req: Request, res: Response) => {
     const cpf = req.headers.cpf as string
     let errorCode= 400

@@ -1,6 +1,7 @@
 import {Request, Response} from 'express'
 import { connection } from '../data/connection'
 
+//Function to check whether the cpf exists in the database
 const selectCpf = async (cpf: string) => {
     const result = await connection.raw(`
         SELECT cpf FROM BankClients WHERE cpf = '${cpf}'
@@ -9,6 +10,7 @@ const selectCpf = async (cpf: string) => {
     return result[0]
 }
 
+//Function that inserts the user info into the database
 const createAccount = async (name: string, cpf: string, birth_date: string, balance: number) => {
     await connection.raw(`
         INSERT INTO BankClients (name, cpf, birth_date, balance)
@@ -18,6 +20,7 @@ const createAccount = async (name: string, cpf: string, birth_date: string, bala
     return 'Conta criada com sucesso!'
 }
 
+//Endpoint
 export const createBankAccount = async (req: Request, res: Response) => {
     const {name, cpf, birth_date} = req.body
     const balance = 0
@@ -39,6 +42,7 @@ export const createBankAccount = async (req: Request, res: Response) => {
             throw new Error("Informe a data de nascimento no padrão DD/MM/AAAA.")
         }
 
+        //checking whether the date was provided in the expected format (DD/MM/AAAA)
         if (birth_date) {
             const array = birth_date.split("-")
             const array2 = birth_date.split("/")
@@ -63,6 +67,7 @@ export const createBankAccount = async (req: Request, res: Response) => {
         let userBirthDate = new Date(birthDateArray[2], birthDateArray[1] - 1, birthDateArray[0])
         let today = new Date()
 
+        //User needs to be at least 18 to be able to create an account
         if (today.getFullYear() - userBirthDate.getFullYear() < 18) {
             errorCode = 403
             throw new Error("Idade mínima de 18 anos não alcançada.")

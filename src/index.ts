@@ -22,7 +22,8 @@ app.post("/users", createBankAccount)
 
 
 // Make a payment
-//app.put("/users/payment", makePayments)
+//Falta atualizar o saldo na data certa do pagamento
+app.patch("/users/payment", makePayments)
 
 
 // Add Balance
