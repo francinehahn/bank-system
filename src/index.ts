@@ -6,7 +6,6 @@ import { deleteBankAccount } from './endpoints/deleteBankAccount'
 import { getAccountBalance } from './endpoints/getAccountBalance'
 import { getAllUsers } from './endpoints/getAllUsers'
 import { makePayments } from './endpoints/makePayments'
-import { updateBalance } from './endpoints/updateBalance'
 
 
 // Get All Users
@@ -30,13 +29,9 @@ app.post("/users/payment", makePayments)
 app.patch("/users/balance", addBalance)
 
 
-// Update Balance
-//app.patch("/users/balance", updateBalance)
-
-
 // Bank transfer
 //app.patch("/users/transfer", bankTransfer)
 
 
 // Delete bank account
-//app.delete('/users/:id', deleteBankAccount)
+app.delete('/users/:id', deleteBankAccount)
