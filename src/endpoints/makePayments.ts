@@ -12,10 +12,17 @@ const selectUserByCpf = async (cpf: string) => {
 }
 
 //Function to insert the payment info in the database
-const patchPayment = async (value: number, date: string, description: string, user_statement: number) => {
+const postPayment = async (value: number, date: string, description: string, user_statement: number) => {
     await connection.raw(`
         INSERT INTO BankStatements (value, date, description, user_statement)
         VALUES (${value}, '${date}', '${description}', ${user_statement});
+    `)
+}
+
+//Function to update balance
+const updateBalance = async (balance: number, value: number, id: string) => {
+    await connection.raw(`
+        UPDATE BankClients SET balance = ${balance - value} WHERE id = '${id}';
     `)
 }
 
@@ -39,7 +46,7 @@ export const makePayments = async (req: Request, res: Response) => {
 
         if (value === 0) {
             errorCode = 422
-            throw new Error("O valor da conta não pode ser nulo.")
+            throw new Error("O valor do pagamento não pode ser zero.")
         }
 
         if (value > userExists.balance) {
@@ -72,30 +79,25 @@ export const makePayments = async (req: Request, res: Response) => {
             } else if (Number(correctFormatDate[0]) > 1000 || Number(correctFormatDate[1]) > 12 || Number(correctFormatDate[2]) < 1000) {
                 errorCode = 422
                 throw new Error("Informe a data no padrão DD/MM/AAAA.")
-            }
-
-            if (today.getFullYear() > correctFormatDate[2]) {
+            } else if (new Date(`${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`) < today) {
                 errorCode = 422
                 throw new Error("Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
-            } else if (today.getFullYear() < correctFormatDate[2]) {
-                errorCode = 422
-                throw new Error("Não é possível realizar pagamentos em anos seguintes.")
-            } else if (today.getFullYear() === correctFormatDate[2]) {
-                if (today.getMonth() + 1 > correctFormatDate[1]) {
-                    errorCode = 422
-                    throw new Error("Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
-                } else if (today.getMonth() + 1 === correctFormatDate[1]) {
-                    if (today.getDate() > correctFormatDate[0]) {
-                        errorCode = 422
-                        throw new Error("Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
-                    }
-                }
             }
 
-            paymentDate = `${correctFormatDate[2]}-${Number(correctFormatDate[1])}-${correctFormatDate[0]}`
+            paymentDate = `${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`
         }
         
-        patchPayment(value, paymentDate, description, userExists[0].id)
+        postPayment(value, paymentDate, description, userExists[0].id)
+        if (!date) {
+            updateBalance(userExists[0].balance, value, userExists[0].id)
+        } else if (date) {
+            const correctFormatDate = date.split("/")
+            const timeOut = new Date(`${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`).valueOf() - new Date().valueOf()
+            setTimeout(() => updateBalance(userExists[0].balance, value, userExists[0].id), timeOut)
+        }
+        
+        
+
         res.status(201).send('Pagamento/agendamento realizado com sucesso.')
         
     } catch (err: any) {

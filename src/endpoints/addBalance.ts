@@ -1,63 +1,61 @@
 import {Request, Response} from 'express'
+import { connection } from '../data/connection'
 
+
+//Function to know whether the user exists in the database
+const selectUserByCpf = async (cpf: string) => {
+    const result = await connection.raw(`
+        SELECT * FROM BankClients WHERE cpf = '${cpf}';
+    `)
+    
+    return result[0]
+}
+
+//Function to update balance
+const updateBalance = async (balance: number, value: number, cpf: string) => {
+    await connection.raw(`
+        UPDATE BankClients SET balance = ${balance + value} WHERE cpf = '${cpf}';
+    `)
+}
+
+//Function to get balance
+const getBalance = async (cpf: string) => {
+    const result = await connection.raw(`
+        SELECT balance FROM BankClients WHERE cpf = '${cpf}';
+    `)
+
+    return result[0][0].balance
+}
 
 export const addBalance = async (req: Request, res: Response) => {
-    const name = req.headers.name as string
-    const cpf = req.headers.cpf as string
-    const valueToAdd = Number(req.body.valueToAdd)
-    let userBalance
-    let userAdd 
+    const {cpf, value} = req.body
     let errorCode= 400
 
     try {
-        if(!name && !cpf && !valueToAdd){
+        if (!cpf && !value) {
             errorCode= 422
-            throw new Error("É obrigatório informar o nome completo, o CPF e o valor que você deseja adicionar.")
-        }        
-        
-        if(!name){
-            errorCode= 422
-            throw new Error("Informe o seu nome completo.")            
-        }
-        
-        if(!cpf){
+            throw new Error("É obrigatório informar o CPF e o valor que você deseja adicionar.")
+        } else if (!cpf) {
             errorCode= 422
             throw new Error("Informe o seu CPF.")            
-        }
-
-        if(!valueToAdd){
+        } else if (!value) {
             errorCode= 422
             throw new Error("Informe o valor que você deseja adicionar.")
         }
 
-        const userExisting = userAccounts.filter((user)=>{
-            if(user.name.toLowerCase() === name.toLowerCase() && user.cpf === cpf){
-                return user
-            }
-        })
+        const userExists = await selectUserByCpf(cpf)
 
-        if(userExisting.length === 0){
+        if (userExists.length === 0) {
             errorCode= 422
             throw new Error("Usuário não encontrado.")            
         }
 
-        for(let user of userAccounts){
-            if(user.name.toLowerCase() === name.toLowerCase() && user.cpf === cpf){
-               user.balance = user.balance + valueToAdd
-               userBalance = user.balance
-               user.statement.push({
-                value: valueToAdd, 
-                date: new Date().toString(), 
-                description: 'Depósito de dinheiro'
-               })
-               userAdd = user.statement[user.statement.length -1]
-            }
-        }
+        const balance = await getBalance(cpf)
+        updateBalance(Number(balance), Number(value), cpf)
+        
+        res.status(201).send('Saldo adicionado com sucesso!') 
 
-        res.status(200).send(`${userAdd?.date}
-        O saldo foi adicionado com sucesso! Seu novo saldo é: ${userBalance}.`) 
-
-    } catch(e: any) {
-        res.status(errorCode).send(e.message)
+    } catch (err: any) {
+        res.status(errorCode).send(err.message)
     } 
 }

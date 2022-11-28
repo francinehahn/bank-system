@@ -17,14 +17,14 @@ export const getAccountBalance = async (req: Request, res: Response) => {
     let errorCode= 400
     
     try {
-        if(!cpf){
+        if (!cpf) {
             errorCode= 422
             throw new Error("É obrigatório informar o CPF para consultar o saldo.")
         }
         
         const balance = await selectBalance(cpf)
 
-        if(!balance) {
+        if (!balance) {
             errorCode= 422
             throw new Error("Usuário não encontrado.")            
         }

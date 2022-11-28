@@ -30,9 +30,9 @@ export const updateBalance = async (req: Request, res: Response) => {
             getUser.balance = Number(getUser.balance.toFixed(2))
         }
 
-        res.status(200).send(`Saldo atualizado: R$ ${getUser.balance}`)
+        res.status(201).send(`Saldo atualizado: R$ ${getUser.balance}`)
 
-    } catch (err:any) {
+    } catch (err: any) {
         res.status(errorCode).send(err.message)
     }
 }
