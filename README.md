@@ -24,7 +24,7 @@ https://documenter.getpostman.com/view/22375317/2s8YsxvBt8
 1. git clone https://github.com/francinehahn/bank-system.git
 2. cd bank-system
 3. npm install
-4. npm run dev or npm run start
+4. npm run start
 
 ## 💻Technologies
 - Node.js
