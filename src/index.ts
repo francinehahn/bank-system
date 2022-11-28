@@ -30,7 +30,7 @@ app.patch("/users/balance", addBalance)
 
 
 // Bank transfer
-//app.patch("/users/transfer", bankTransfer)
+app.patch("/users/transfer", bankTransfer)
 
 
 // Delete bank account
