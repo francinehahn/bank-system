@@ -27,6 +27,7 @@ const getBalance = async (cpf: string) => {
     return result[0][0].balance
 }
 
+//Endpoint
 export const addBalance = async (req: Request, res: Response) => {
     const {cpf, value} = req.body
     let errorCode= 400

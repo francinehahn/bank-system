@@ -16,8 +16,6 @@ const createAccount = async (name: string, cpf: string, birth_date: string, bala
         INSERT INTO BankClients (name, cpf, birth_date, balance)
         VALUES ('${name}', '${cpf}', '${birth_date}', ${balance})
     `)
-
-    return 'Conta criada com sucesso!'
 }
 
 //Endpoint
@@ -58,7 +56,7 @@ export const createBankAccount = async (req: Request, res: Response) => {
 
         const cpfExists = await selectCpf(cpf)
         
-        if (!cpfExists) {
+        if (cpfExists.length > 0) {
             errorCode = 409
             throw new Error("CPF já existente no banco de dados.")
         }
@@ -86,8 +84,8 @@ export const createBankAccount = async (req: Request, res: Response) => {
         const birthdayArray = birth_date.toString().split("/")
         const formattedDate = `${birthdayArray[2]}-${birthdayArray[1]}-${birthdayArray[0]}`
         
-        const result = await createAccount(name, cpf, formattedDate, balance)
-        res.status(201).send(result)
+        await createAccount(name, cpf, formattedDate, balance)
+        res.status(201).send('Conta criada com sucesso!')
             
     } catch (err:any) {
         res.status(errorCode).send(err.message)

@@ -20,9 +20,9 @@ const postPayment = async (value: number, date: string, description: string, use
 }
 
 //Function to update balance
-const updateBalance = async (balance: number, value: number, id: string) => {
+const updateBalance = async (cpf: string, balance: number, value: number) => {
     await connection.raw(`
-        UPDATE BankClients SET balance = ${balance - value} WHERE id = '${id}';
+        UPDATE BankClients SET balance = ${balance - value} WHERE cpf = '${cpf}';
     `)
 }
 
@@ -61,6 +61,9 @@ export const makePayments = async (req: Request, res: Response) => {
 
         let paymentDate: string = ""
         const today = new Date()
+        const todayYear = today.getFullYear()
+        const todayMonth = today.getMonth()
+        const todayDay = today.getDate()
 
         //If the user does not provide the payment date, it will be considered as today
         if (!date) {
@@ -71,15 +74,13 @@ export const makePayments = async (req: Request, res: Response) => {
         
         } else if (date) {
             const incorrectFormatDate = date.split("-")
-            const correctFormatDate = date.split("/").map(Number)
+            const correctFormatDate = date.split("/")
             
-            if (incorrectFormatDate.length > 1) {
+            if (incorrectFormatDate.length > 1 || Number(correctFormatDate[0]) > 1000 || Number(correctFormatDate[1]) > 12 ||
+                Number(correctFormatDate[2]) < 1000) {
                 errorCode = 422
                 throw new Error("Informe a data no padrão DD/MM/AAAA.")
-            } else if (Number(correctFormatDate[0]) > 1000 || Number(correctFormatDate[1]) > 12 || Number(correctFormatDate[2]) < 1000) {
-                errorCode = 422
-                throw new Error("Informe a data no padrão DD/MM/AAAA.")
-            } else if (new Date(`${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`) < today) {
+            } else if (new Date(`${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`) < new Date(`${todayYear}-${todayMonth}-${todayDay}`)) {
                 errorCode = 422
                 throw new Error("Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
             }
@@ -88,16 +89,15 @@ export const makePayments = async (req: Request, res: Response) => {
         }
         
         postPayment(value, paymentDate, description, userExists[0].id)
+        
         if (!date) {
-            updateBalance(userExists[0].balance, value, userExists[0].id)
+            updateBalance(cpf, userExists[0].balance, value)
         } else if (date) {
             const correctFormatDate = date.split("/")
             const timeOut = new Date(`${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`).valueOf() - new Date().valueOf()
-            setTimeout(() => updateBalance(userExists[0].balance, value, userExists[0].id), timeOut)
+            setTimeout(() => updateBalance(cpf, userExists[0].balance, value), timeOut)
         }
         
-        
-
         res.status(201).send('Pagamento/agendamento realizado com sucesso.')
         
     } catch (err: any) {
