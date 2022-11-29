@@ -22,7 +22,6 @@ app.post("/users", createBankAccount)
 
 
 // Make a payment
-//Gio deve atualizar o balance para 29.840,00 no dia 29/11/2022
 app.post("/users/payment", makePayments)
 
 
