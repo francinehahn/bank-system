@@ -5,6 +5,7 @@ import { createBankAccount } from './endpoints/createBankAccount'
 import { deleteBankAccount } from './endpoints/deleteBankAccount'
 import { getAccountBalance } from './endpoints/getAccountBalance'
 import { getAllUsers } from './endpoints/getAllUsers'
+import { getStatementsById } from './endpoints/getStatementsById'
 import { makePayments } from './endpoints/makePayments'
 
 
@@ -35,3 +36,7 @@ app.patch("/users/transfer", bankTransfer)
 
 // Delete bank account
 app.delete('/users/:id', deleteBankAccount)
+
+
+// Get Statements By Id
+app.get('/statements/:id', getStatementsById) 
