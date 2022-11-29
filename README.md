@@ -14,6 +14,7 @@ https://documenter.getpostman.com/view/22375317/2s8YsxvBt8
 ## ☑️Requests
 - Get All Users
 - Get Account Balance
+- Get Statements By Id
 - Create Bank Account
 - Make a Payment
 - Add Balance
