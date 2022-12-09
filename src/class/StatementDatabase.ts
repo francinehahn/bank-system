@@ -10,7 +10,7 @@ export default class StatementDatabase extends BaseDatabase {
         return result[0]
     }   
 
-    //Function that inserts the payment info in the database
+    //Method that inserts the payment info in the database
     public async postPayment (value: number, date: Date, description: string, user_id: number) {
         await BaseDatabase.connection.raw(`
             INSERT INTO BankStatements (value, date, description, user_id)
