@@ -39,13 +39,13 @@ export const bankTransfer = async (req: Request, res: Response) => {
         const senderBalance = await user.getBalance(senderCpf)
         const receiverBalance = await user.getBalance(receiverCpf)
 
-        if (senderBalance < value) {
+        if (senderBalance.balance < value) {
             error = 401
             throw new Error('Não há saldo suficiente na conta do usuário para realizar a transferência.')
         }
         
-        await user.updateSenderBalance(senderBalance, value, senderCpf)
-        await user.updateReceiverBalance(receiverBalance, value, receiverCpf)
+        await user.updateSenderBalance(senderBalance.balance, value, senderCpf)
+        await user.updateReceiverBalance(receiverBalance.balance, value, receiverCpf)
 
         res.status(201).send('Transferência realizada com sucesso!')
 

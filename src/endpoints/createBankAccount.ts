@@ -4,11 +4,12 @@ import UserDatabase from '../class/UserDatabase'
 
 
 export const createBankAccount = async (req: Request, res: Response) => {
-    const {name, cpf, birth_date} = req.body
-    const balance = 0
     let errorCode = 400
     
     try {
+        const {name, cpf, birth_date} = req.body
+        const balance = 0
+
         if (!name) {
             errorCode = 422
             throw new Error("Informe o nome completo.")
@@ -67,7 +68,7 @@ export const createBankAccount = async (req: Request, res: Response) => {
         }
 
         const birthdayArray = birth_date.toString().split("/")
-        const formattedDate = new Date(`${birthdayArray[2]}-${birthdayArray[1]}-${birthdayArray[0]}`)
+        const formattedDate = `${birthdayArray[2]}-${birthdayArray[1]}-${birthdayArray[0]}`
         
         new User(name, cpf, formattedDate, balance)
         await user.createAccount(name, cpf, formattedDate, balance)

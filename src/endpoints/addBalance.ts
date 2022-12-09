@@ -28,7 +28,8 @@ export const addBalance = async (req: Request, res: Response) => {
         }
 
         const balance = await user.getBalance(cpf)
-        user.updateReceiverBalance(Number(balance), Number(value), cpf)
+        console.log(balance)
+        user.updateReceiverBalance(balance.balance, Number(value), cpf)
         
         res.status(201).send('Saldo adicionado com sucesso!') 
 

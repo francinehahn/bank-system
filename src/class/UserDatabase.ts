@@ -13,7 +13,7 @@ export default class UserDatabase extends BaseDatabase {
     //Method to know whether the user_id exists in the database
     public async selectUserById (id: number) {
         const result = await BaseDatabase.connection.raw(`
-            SELECT * FROM BankClients WHERE id = '${id}';
+            SELECT * FROM BankClients WHERE id = ${id};
         `)
         
         return result[0]
@@ -34,7 +34,7 @@ export default class UserDatabase extends BaseDatabase {
             SELECT balance FROM BankClients WHERE cpf = '${cpf}';
         `)
 
-        return result[0][0].balance
+        return result[0][0]
     }
 
     //Method that updates the sender balance
@@ -52,7 +52,7 @@ export default class UserDatabase extends BaseDatabase {
     }
 
     //Method that inserts the user info into the database
-    public async createAccount (name: string, cpf: string, birth_date: Date, balance: number) {
+    public async createAccount (name: string, cpf: string, birth_date: string, balance: number) {
         await BaseDatabase.connection.raw(`
             INSERT INTO BankClients (name, cpf, birth_date, balance)
             VALUES ('${name}', '${cpf}', '${birth_date}', ${balance})
@@ -62,11 +62,11 @@ export default class UserDatabase extends BaseDatabase {
     //Method that deletes bank account and user statements
     public async delAccountAndStatements (id: number) {
         await BaseDatabase.connection.raw(`
-            DELETE FROM BankClients WHERE id = '${id}';
+            DELETE FROM BankClients WHERE id = ${id};
         `)
 
         await BaseDatabase.connection.raw(`
-            DELETE FROM BankStatements WHERE user_statement = '${id}';
+            DELETE FROM BankStatements WHERE user_id = ${id};
         `)
     }
 }

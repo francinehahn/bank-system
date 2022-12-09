@@ -3,22 +3,25 @@ import UserDatabase from '../class/UserDatabase'
 
 
 export const getAccountBalance = async (req: Request, res: Response) => {
-    const cpf = req.headers.cpf as string
     let errorCode= 400
     
     try {
+        const cpf = req.headers.cpf as string
+
         if (!cpf) {
             errorCode= 422
             throw new Error("É obrigatório informar o CPF para consultar o saldo.")
         }
         
         const user = new UserDatabase()
-        const balance = await user.getBalance(cpf)
-
-        if (!balance) {
-            errorCode= 422
-            throw new Error("Usuário não encontrado.")            
+        const userExists = await user.selectUserByCpf(cpf)
+        
+        if(userExists.length === 0) {
+            errorCode = 422
+            throw new Error("O cpf informado não existe.")
         }
+
+        const balance = await user.getBalance(cpf)
         
         res.status(200).send(balance)        
 
