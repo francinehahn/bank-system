@@ -1,24 +1,16 @@
 import {Request, Response} from 'express'
-import { connection } from '../data/connection'
+import UserDatabase from '../class/UserDatabase'
 
-//Function that return all user in the database
-const selectAllUses = async () => {
-    const result = await connection.raw(`
-        SELECT * FROM BankClients;
-    `)
 
-    return result[0]
-}
-
-//Endpoint
 export const getAllUsers = async (req: Request, res: Response) => {
     let errorCode= 400
 
     try {
-        const result = await selectAllUses()
+        const user = new UserDatabase()
+        const result = await user.selectAllUses()
         res.status(200).send(result)
 
-    } catch(err: any) {
+    } catch (err: any) {
         res.status(errorCode).send(err.message)
     }
 }

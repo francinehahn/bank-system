@@ -1,17 +1,7 @@
 import {Request, Response} from 'express'
-import { connection } from '../data/connection'
+import UserDatabase from '../class/UserDatabase'
 
 
-//Function that returns the balance from a user
-const selectBalance = async (cpf: string) => {
-    const result = await connection.raw(`
-        SELECT balance FROM BankClients WHERE cpf = '${cpf}';
-    `)
-
-    return result[0][0]
-}
-
-//Endpoint
 export const getAccountBalance = async (req: Request, res: Response) => {
     const cpf = req.headers.cpf as string
     let errorCode= 400
@@ -22,7 +12,8 @@ export const getAccountBalance = async (req: Request, res: Response) => {
             throw new Error("É obrigatório informar o CPF para consultar o saldo.")
         }
         
-        const balance = await selectBalance(cpf)
+        const user = new UserDatabase()
+        const balance = await user.getBalance(cpf)
 
         if (!balance) {
             errorCode= 422

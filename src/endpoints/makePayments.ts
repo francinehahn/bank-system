@@ -1,43 +1,22 @@
 import {Request, Response} from 'express'
-import { connection } from '../data/connection'
+import Statement from '../class/Statement'
+import StatementDatabase from '../class/StatementDatabase'
+import UserDatabase from '../class/UserDatabase'
 
 
-//Function to know whether the user exists in the database
-const selectUserByCpf = async (cpf: string) => {
-    const result = await connection.raw(`
-        SELECT * FROM BankClients WHERE cpf = '${cpf}';
-    `)
-    
-    return result[0]
-}
-
-//Function to insert the payment info in the database
-const postPayment = async (value: number, date: string, description: string, user_statement: number) => {
-    await connection.raw(`
-        INSERT INTO BankStatements (value, date, description, user_statement)
-        VALUES (${value}, '${date}', '${description}', ${user_statement});
-    `)
-}
-
-//Function to update balance
-const updateBalance = async (cpf: string, balance: number, value: number) => {
-    await connection.raw(`
-        UPDATE BankClients SET balance = ${balance - value} WHERE cpf = '${cpf}';
-    `)
-}
-
-//Endpoint
 export const makePayments = async (req: Request, res: Response) => {
-    const {cpf, value, date, description} = req.body
     let errorCode = 400
 
     try {
+        const {cpf, value, date, description} = req.body
+
         if (!cpf) {
             errorCode = 403
             throw new Error("Informe seu CPF para continuar.")
         }
 
-        const userExists = await selectUserByCpf(cpf)
+        const user = new UserDatabase()
+        const userExists = await user.selectUserByCpf(cpf)
         
         if (userExists.length === 0) {
             errorCode = 401
@@ -59,7 +38,7 @@ export const makePayments = async (req: Request, res: Response) => {
             throw new Error("Adicione uma descrição para esta transação.")
         }
 
-        let paymentDate: string = ""
+        let paymentDate = new Date()
         const today = new Date()
         const todayYear = today.getFullYear()
         const todayMonth = today.getMonth()
@@ -70,7 +49,7 @@ export const makePayments = async (req: Request, res: Response) => {
             const day = Number(today.getDate()) > 9? today.getDate() : `0${today.getDate()}`
             const month = Number(today.getMonth()) > 9 ? today.getMonth() + 1 : `0${Number(today.getMonth() + 1)}`
             const year = today.getFullYear()
-            paymentDate = `${year}-${month}-${day}`
+            paymentDate = new Date(`${year}-${month}-${day}`)
         
         } else if (date) {
             const incorrectFormatDate = date.split("-")
@@ -85,17 +64,19 @@ export const makePayments = async (req: Request, res: Response) => {
                 throw new Error("Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
             }
 
-            paymentDate = `${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`
+            paymentDate = new Date(`${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`)
         }
         
-        postPayment(value, paymentDate, description, userExists[0].id)
+        const newStatement = new Statement(value, paymentDate, description, userExists[0].id)
+        const statementDatabase = new StatementDatabase()
+        await statementDatabase.postPayment(value, paymentDate, description, userExists[0].id)
         
         if (!date) {
-            updateBalance(cpf, userExists[0].balance, value)
+            user.updateSenderBalance(cpf, userExists[0].balance, value)
         } else if (date) {
             const correctFormatDate = date.split("/")
             const timeOut = new Date(`${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`).valueOf() - new Date().valueOf()
-            setTimeout(() => updateBalance(cpf, userExists[0].balance, value), timeOut)
+            setTimeout(() => user.updateSenderBalance(cpf, userExists[0].balance, value), timeOut)
         }
         
         res.status(201).send('Pagamento/agendamento realizado com sucesso.')

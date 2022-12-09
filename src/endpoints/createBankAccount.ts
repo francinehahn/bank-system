@@ -1,24 +1,8 @@
 import {Request, Response} from 'express'
-import { connection } from '../data/connection'
+import User from '../class/User'
+import UserDatabase from '../class/UserDatabase'
 
-//Function to check whether the cpf exists in the database
-const selectCpf = async (cpf: string) => {
-    const result = await connection.raw(`
-        SELECT cpf FROM BankClients WHERE cpf = '${cpf}'
-    `)
 
-    return result[0]
-}
-
-//Function that inserts the user info into the database
-const createAccount = async (name: string, cpf: string, birth_date: string, balance: number) => {
-    await connection.raw(`
-        INSERT INTO BankClients (name, cpf, birth_date, balance)
-        VALUES ('${name}', '${cpf}', '${birth_date}', ${balance})
-    `)
-}
-
-//Endpoint
 export const createBankAccount = async (req: Request, res: Response) => {
     const {name, cpf, birth_date} = req.body
     const balance = 0
@@ -54,7 +38,8 @@ export const createBankAccount = async (req: Request, res: Response) => {
             }
         }
 
-        const cpfExists = await selectCpf(cpf)
+        const user = new UserDatabase()
+        const cpfExists = await user.selectUserByCpf(cpf)
         
         if (cpfExists.length > 0) {
             errorCode = 409
@@ -82,9 +67,10 @@ export const createBankAccount = async (req: Request, res: Response) => {
         }
 
         const birthdayArray = birth_date.toString().split("/")
-        const formattedDate = `${birthdayArray[2]}-${birthdayArray[1]}-${birthdayArray[0]}`
+        const formattedDate = new Date(`${birthdayArray[2]}-${birthdayArray[1]}-${birthdayArray[0]}`)
         
-        await createAccount(name, cpf, formattedDate, balance)
+        new User(name, cpf, formattedDate, balance)
+        await user.createAccount(name, cpf, formattedDate, balance)
         res.status(201).send('Conta criada com sucesso!')
             
     } catch (err:any) {
