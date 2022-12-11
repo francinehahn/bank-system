@@ -23,9 +23,9 @@ export const makePayments = async (req: Request, res: Response) => {
             throw new Error("Usuário não encontrado no banco de dados.")
         }
 
-        if (value === 0) {
+        if (value <= 0) {
             errorCode = 422
-            throw new Error("O valor do pagamento não pode ser zero.")
+            throw new Error("O valor do pagamento não pode ser menor ou igual a zero.")
         }
 
         if (value > userExists[0].balance) {
