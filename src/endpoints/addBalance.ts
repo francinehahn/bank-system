@@ -11,12 +11,21 @@ export const addBalance = async (req: Request, res: Response) => {
         if (!cpf && !value) {
             errorCode= 422
             throw new Error("É obrigatório informar o CPF e o valor que você deseja adicionar.")
-        } else if (!cpf) {
+        }
+        
+        if (!cpf) {
             errorCode= 422
             throw new Error("Informe o seu CPF.")            
-        } else if (!value) {
+        }
+        
+        if (!value) {
             errorCode= 422
             throw new Error("Informe o valor que você deseja adicionar.")
+        }
+
+        if (value <= 0) {
+            errorCode= 422
+            throw new Error("O valor que você deseja adicionar não pode ser menor ou igual a zero.")
         }
 
         const user = new UserDatabase()
