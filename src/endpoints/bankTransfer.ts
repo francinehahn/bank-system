@@ -20,7 +20,11 @@ export const bankTransfer = async (req: Request, res: Response) => {
         } else if (!value) {
             error = 422
             throw new Error('É obrigatório fornecer o valor que será transferido.')
+        } else if (value <= 0) {
+            error = 422
+            throw new Error('O valor a ser transferido não pode ser menor ou igual a zero.')
         }
+
 
         const user = new UserDatabase()
         const senderCpfExists = await user.selectUserByCpf(senderCpf)
@@ -34,7 +38,6 @@ export const bankTransfer = async (req: Request, res: Response) => {
             error = 422
             throw new Error('O cpf do usuário que irá receber a transferência não existe.')
         }
-
 
         const senderBalance = await user.getBalance(senderCpf)
         const receiverBalance = await user.getBalance(receiverCpf)
