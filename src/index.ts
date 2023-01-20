@@ -1,41 +1,37 @@
 import { app } from './app'
-import { addBalance } from './endpoints/addBalance'
-import { bankTransfer } from './endpoints/bankTransfer'
-import { createBankAccount } from './endpoints/createBankAccount'
-import { deleteBankAccount } from './endpoints/deleteBankAccount'
-import { getAccountBalance } from './endpoints/getAccountBalance'
-import { getAllUsers } from './endpoints/getAllUsers'
-import { getStatementsById } from './endpoints/getStatementsById'
-import { makePayments } from './endpoints/makePayments'
+import { StatementController } from './controller/StatementController'
+import { UserController } from './controller/UserController'
 
+const userController = new UserController()
+const statementController = new StatementController()
 
 // Get All Users
-app.get("/users", getAllUsers)
+app.get("/users", userController.getAllUsers)
 
 
 // Get Account Balance
-app.get("/users/balance", getAccountBalance)
+app.get("/users/balance", userController.getAccountBalance)
 
 
 // Create Bank Account 
-app.post("/users", createBankAccount)
+app.post("/users", userController.createBankAccount)
 
 
 // Make a payment
-app.post("/users/payment", makePayments)
+app.post("/users/payment", statementController.makePayments)
 
 
 // Add Balance
-app.patch("/users/balance", addBalance)
+app.patch("/users/balance", userController.addBalance)
 
 
 // Bank transfer
-app.patch("/users/transfer", bankTransfer)
+app.patch("/users/transfer", userController.bankTransfer)
 
 
 // Delete bank account
-app.delete('/users/:id', deleteBankAccount)
+app.delete('/users/:id', userController.deleteBankAccount)
 
 
 // Get Statements By Id
-app.get('/statements/:id', getStatementsById) 
+app.get('/statements/:id', statementController.getStatementsById) 
