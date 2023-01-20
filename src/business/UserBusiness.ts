@@ -121,15 +121,14 @@ export class UserBusiness {
         }
     }
 
-    getAccountBalance = async (cpf: string): Promise<Number> => {
+    getAccountBalance = async (cpf: string): Promise<any> => {
         try {
             if (!cpf) {
                 throw new Error("É obrigatório informar o CPF para consultar o saldo.")
             }
 
             const userDatabase = new UserDatabase()
-            const balance = await userDatabase.getAccountBalance(cpf)
-            return balance
+            return await userDatabase.getAccountBalance(cpf)
 
         } catch (err: any) {
             throw new Error(err.message)

@@ -81,7 +81,7 @@ export default class UserDatabase extends BaseDatabase {
         }
     }
 
-    getAccountBalance = async (cpf: string): Promise<Number> => {
+    getAccountBalance = async (cpf: string) => {
         try {
             const cpfExists = await BaseDatabase.connection("BankClients").select().where("cpf", cpf)
             
@@ -89,7 +89,7 @@ export default class UserDatabase extends BaseDatabase {
                 throw new Error("O cpf informado não existe.")
             }
     
-            const balance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", 'cpf')
+            const balance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", cpf)
             return balance[0]
 
         } catch (err: any) {
