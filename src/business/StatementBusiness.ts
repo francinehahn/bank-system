@@ -1,79 +1,77 @@
 import StatementDatabase from "../data/StatementDatabase"
-import Statement from "../types/Statement"
+import UserDatabase from "../data/UserDatabase"
+import { CustomError } from "../error/CustomError"
+import { InsufficientBalance, InvalidPaymentDate, InvalidValue, MissingDescription } from "../error/StatementErrors"
+import { MissingUserCpf, MissingUserId, UserIdNotFound } from "../error/UserErrors"
+import { MakePaymentsDTO } from "../models/MakePaymentsDTO"
+import Statement from "../models/Statement"
 
 
 export class StatementBusiness {
-    getStatementsById = async (id: string): Promise<Statement[]> => {
+    getStatementsById = async (id: number): Promise<Statement[]> => {
         try {
             if (!id) {
-                throw new Error("Informe o id do usuário.")
+                throw new MissingUserId()
+            }
+
+            const userDatabase = new UserDatabase()
+            const userExists = await userDatabase.getUserById(id)
+            
+            if (userExists.length === 0) {
+                throw new UserIdNotFound()
             }
 
             const statementDatabase = new StatementDatabase()
             return await statementDatabase.getStatementsById(id)
 
         } catch (err: any) {
-            throw new Error(err.message)
+            throw new CustomError(err.statusCode, err.message)
         }
     }
 
-    makePayments = async ({cpf, value, date, description}: any): Promise<void> => {
+
+    makePayments = async (input: MakePaymentsDTO): Promise<void> => {
         try {
-            if (!cpf) {
-                throw new Error("Informe seu CPF para continuar.")
+            if (!input.cpf) {
+                throw new MissingUserCpf()
             }
     
-            if (value <= 0) {
-                throw new Error("O valor do pagamento não pode ser menor ou igual a zero.")
+            if (input.value <= 0) {
+                throw new InvalidValue()
             }
     
-            if (!description) {
-                throw new Error("Adicione uma descrição para esta transação.")
+            if (!input.description) {
+                throw new MissingDescription()
             }
 
-            let paymentDate = ""
-            const today = new Date()
-            const todayYear = today.getFullYear()
-            const todayMonth = today.getMonth() + 1
-            const todayDay = today.getDate()
+            const userDatabase = new UserDatabase()
+            const userExists = await userDatabase.getUserByCpf(input.cpf)
+       
+            if (userExists.length === 0) {
+                throw new UserIdNotFound()
+            }
 
-            //If the user does not provide the payment date, it will be considered as today
-            if (!date) {
-                const day = Number(today.getDate()) > 9? today.getDate() : `0${today.getDate()}`
-                const month = Number(today.getMonth()) > 9 ? today.getMonth() + 1 : `0${Number(today.getMonth() + 1)}`
-                const year = today.getFullYear()
-                paymentDate = `${year}-${month}-${day}`
-            
-            //Calculating whether the provided date is in the future    
-            } else if (date) {
-                const incorrectFormatDate = date.split("-")
-                const correctFormatDate = date.split("/")
-                
-                if (incorrectFormatDate.length > 1 || Number(correctFormatDate[0]) > 1000 || Number(correctFormatDate[1]) > 12 ||
-                    Number(correctFormatDate[2]) < 1000) {
-                    throw new Error("Informe a data no padrão DD/MM/AAAA.")
-                }
-                
-                if (Number(correctFormatDate[2]) < todayYear) {
-                    throw new Error("Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
-                } else if (Number(correctFormatDate[2]) === todayYear) {
-                    if (Number(correctFormatDate[1]) < Number(todayMonth)) {
-                        throw new Error("Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
-                    } else if (Number(correctFormatDate[1]) === Number(todayMonth)) {
-                        if (Number(correctFormatDate[0]) < Number(todayDay)) {
-                            throw new Error("Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
-                        }
-                    }
+            if (Number(input.value) > userExists[0].balance) {
+                throw new InsufficientBalance()
+            }
+
+            let paymentDate: Date = new Date()
+
+            if (input.date) {
+                if (input.date.valueOf() - new Date().valueOf() < 0) {
+                    throw new InvalidPaymentDate()
                 }
 
-                paymentDate = `${correctFormatDate[2]}-${correctFormatDate[1]}-${correctFormatDate[0]}`
+                paymentDate = new Date(input.date.toString().split("/").reverse().join("-"))
             }
 
             const statementDatabase = new StatementDatabase()
-            await statementDatabase.makePayments({cpf, value, paymentDate, description})
+            input.date = paymentDate
+            const newStatement = new Statement(input.value, input.date, input.description, userExists[0].id)
+            await statementDatabase.makePayments(input, newStatement)
 
         } catch (err: any) {
-            throw new Error(err.message)
+            throw new CustomError(err.statusCode, err.message)
         }
     }
 }

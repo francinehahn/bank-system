@@ -1,24 +1,23 @@
 {
-  "name": "barros-labebank4",
+  "name": "bank-system",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "tsc && node ./build/index.js",
-    "dev": "ts-node-dev ./src/index.ts",
-    "migrations": "ts-node-dev ./src/data/migrations.ts"
+    "dev": "ts-node-dev ./src/index.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/future4code/Barros-labebank4.git"
+    "url": "git+https://github.com/francinehahn/bank-system.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/future4code/Barros-labebank4/issues"
+    "url": "https://github.com/francinehahn/bank-system/issues"
   },
-  "homepage": "https://github.com/future4code/Barros-labebank4#readme",
+  "homepage": "https://github.com/francinehahn/bank-system#readme",
   "devDependencies": {
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.14",
@@ -32,6 +31,8 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "knex": "^2.3.0",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "uuid": "^9.0.0",
+    "uuidv4": "^6.2.13"
   }
 }

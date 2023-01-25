@@ -1,13 +1,17 @@
 export default class Statement {
     private value: number
-    private date: string
+    private date: Date
     private description: string
     private user_id: number
 
-    constructor (v: number, date: string, desc: string, ui: number) {
+    constructor (v: number, date: Date, desc: string, ui: number) {
         this.value = v
         this.date = date
         this.description = desc
         this.user_id = ui
+    }
+
+    public getUserId() {
+        return this.user_id
     }
 }

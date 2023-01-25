@@ -1,107 +1,109 @@
-import User from "../types/User"
+import { AddBalanceDTO } from "../models/AddBalanceDTO"
+import { BankTransferDTO } from "../models/BankTransferDTO"
+import { ReturnBalanceDTO } from "../models/ReturnBalanceDTO"
+import User from "../models/User"
 import BaseDatabase from "./BaseDatabase"
+import { CustomError } from "../error/CustomError"
 
 
 export default class UserDatabase extends BaseDatabase {
     
-    addBalance = async ({cpf, value}: any): Promise<void> => {
+    addBalance = async (input: AddBalanceDTO): Promise<void> => {
         try {
-            const userExists = await BaseDatabase.connection("BankClients").select().where("cpf", cpf)
-
-            if (userExists.length === 0) {
-                throw new Error("Usuário não encontrado.")            
-            }
-
-            const balance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", cpf)
-        
-            await BaseDatabase.connection("BankClients").where("cpf", cpf).update("balance", balance[0].balance + Number(value))
+            const balance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", input.cpf)
+            await BaseDatabase.connection("BankClients").where("cpf", input.cpf).update("balance", balance[0].balance + Number(input.value))
 
         } catch (err: any) {
-            throw new Error(err.message)
+            throw new CustomError(err.statusCode, err.message)
         }
     }
 
-    bankTransfer = async ({senderCpf, receiverCpf, value}: any): Promise<void> => {
+
+    bankTransfer = async (input: BankTransferDTO): Promise<void> => {
         try {
-            const senderCpfExists = await BaseDatabase.connection("BankClients").select().where("cpf", senderCpf)
-
-            if (senderCpfExists.length === 0) {
-                throw new Error('O cpf do usuário que irá fazer a transferência não existe.')
-            }
-
-            const receiverCpfExists = await BaseDatabase.connection("BankClients").select().where("cpf", receiverCpf)
-            if (receiverCpfExists.length === 0) {
-                throw new Error('O cpf do usuário que irá receber a transferência não existe.')
-            }
-
-            const senderBalance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", senderCpf)
-            const receiverBalance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", receiverCpf)
-
-            if (senderBalance[0].balance < Number(value)) {
-                throw new Error('Não há saldo suficiente na conta do usuário para realizar a transferência.')
-            }
             
-            await BaseDatabase.connection("BankClients").where("cpf", senderCpf).update("balance", senderBalance[0].balance - Number(value))
-            await BaseDatabase.connection("BankClients").where("cpf", receiverCpf).update("balance", receiverBalance[0].balance + Number(value))
+            const senderBalance = await this.getAccountBalance(input.senderCpf)
+            const receiverBalance = await this.getAccountBalance(input.receiverCpf)
+
+            await BaseDatabase.connection("BankClients")
+            .where("cpf", input.senderCpf)
+            .update("balance", senderBalance.balance - Number(input.value))
+
+            await BaseDatabase.connection("BankClients")
+            .where("cpf", input.receiverCpf)
+            .update("balance", receiverBalance.balance + Number(input.value))
 
         } catch (err: any) {
-            throw new Error(err.message)
+            throw new CustomError(err.statusCode, err.message)
         }
     }
 
-    createBankAccount = async ({name, cpf, birthDate, balance}: any): Promise<void> => {
+
+    createBankAccount = async (newBankAccount: User): Promise<void> => {
         try {
-            const cpfExists = await BaseDatabase.connection("BankClients").select().where("cpf", cpf)
-            
-            if (cpfExists.length > 0) {
-                throw new Error("CPF já existente no banco de dados.")
-            }
-    
-            const newUser = new User(name, cpf, birthDate, balance)
-            await BaseDatabase.connection.insert(newUser).into("BankClients")
+            await BaseDatabase.connection.insert(newBankAccount).into("BankClients")
 
         } catch (err: any) {
-            throw new Error(err.message)
+            throw new CustomError(err.statusCode, err.message)
         }
     }
 
-    deleteBankAccount = async (id: string): Promise<void> => {
-        try {
-            const idExists = await BaseDatabase.connection("BankClients").select().where("id", id)
 
-            if (idExists.length === 0) {
-                throw new Error('O id da conta bancária não existe.')
-            }
-    
+    deleteBankAccount = async (id: number): Promise<void> => {
+        try {
             await BaseDatabase.connection("BankClients").where("id", id).del()
             await BaseDatabase.connection("BankStatements").where("user_id", id).del()
 
         } catch (err: any) {
-            throw new Error(err.message)
+            throw new CustomError(err.statusCode, err.message)
         }
     }
 
-    getAccountBalance = async (cpf: string) => {
+
+    getAccountBalance = async (cpf: string): Promise<ReturnBalanceDTO> => {
         try {
-            const cpfExists = await BaseDatabase.connection("BankClients").select().where("cpf", cpf)
-            
-            if (cpfExists.length === 0) {
-                throw new Error("O cpf informado não existe.")
-            }
-    
             const balance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", cpf)
             return balance[0]
 
         } catch (err: any) {
-            throw new Error(err.message)
+            throw new CustomError(err.statusCode, err.message)
         }
     }
 
+    
     getAllUsers = async (): Promise<User[]> => {
         try {
             return await BaseDatabase.connection("BankClients").select()
+
         } catch (err: any) {
-            throw new Error(err.message)
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    getUserByCpf = async (cpf: string): Promise<any> => {
+        try {
+            return await BaseDatabase.connection("BankClients").select().where("cpf", cpf)
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    getUserById = async (id: number): Promise<any> => {
+        try {
+            return await BaseDatabase.connection("BankClients").select().where("id", id)
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    getBankAccountById = async (id: number): Promise<any> => {
+        try {
+            return await BaseDatabase.connection("BankClients").select().where("id", id)
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
         }
     }
 }
