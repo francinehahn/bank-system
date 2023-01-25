@@ -25,7 +25,7 @@ export class StatementController {
                 date: req.body.date,
                 description: req.body.description
             }
-
+            
             const statementBusiness = new StatementBusiness()
             await statementBusiness.makePayments(input)
 

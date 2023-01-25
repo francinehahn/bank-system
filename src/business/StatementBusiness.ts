@@ -55,18 +55,20 @@ export class StatementBusiness {
                 throw new InsufficientBalance()
             }
 
-            let paymentDate: Date = new Date()
-
+            const today = new Date()
+            let paymentDate = new Date(`${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`)
+            
             if (input.date) {
                 if (input.date.valueOf() - new Date().valueOf() < 0) {
                     throw new InvalidPaymentDate()
                 }
 
-                paymentDate = new Date(input.date.toString().split("/").reverse().join("-"))
+                paymentDate = new Date(input.date.toString().split("/").reverse().join(","))
             }
 
             const statementDatabase = new StatementDatabase()
             input.date = paymentDate
+            
             const newStatement = new Statement(input.value, input.date, input.description, userExists[0].id)
             await statementDatabase.makePayments(input, newStatement)
 
