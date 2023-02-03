@@ -5,14 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node ./build/index.js",
-    "dev": "ts-node-dev ./src/index.ts"
+    "dev": "ts-node-dev ./src/index.ts",
+    "migrations": "ts-node-dev ./src/migrations/migrations.ts"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/francinehahn/bank-system.git"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Francine Hahn",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/francinehahn/bank-system/issues"
