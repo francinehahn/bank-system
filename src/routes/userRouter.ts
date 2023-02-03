@@ -9,7 +9,6 @@ const userDatabase = new UserDatabase()
 const userBusiness = new UserBusiness(userDatabase)
 const userController = new UserController(userBusiness)
 
-userRouter.get("/", userController.getAllUsers)
 userRouter.post("/", userController.signup)
 userRouter.delete("/", userController.deleteBankAccount)
 

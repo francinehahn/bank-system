@@ -148,14 +148,4 @@ export class UserBusiness {
             throw new CustomError(err.statusCode, err.message)
         }
     }
-
-
-    getAllUsers = async (): Promise<User[]> => {
-        try {
-            return await this.userDatabase.getAllUsers()
-
-        } catch (err: any) {
-            throw new CustomError(err.statusCode, err.message)
-        }
-    }
 }

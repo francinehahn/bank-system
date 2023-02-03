@@ -37,16 +37,6 @@ export default class UserDatabase extends BaseDatabase implements UserRepository
         }
     }
 
-    
-    getAllUsers = async (): Promise<User[]> => {
-        try {
-            return await BaseDatabase.connection("BankClients").select()
-
-        } catch (err: any) {
-            throw new CustomError(err.statusCode, err.message)
-        }
-    }
-
 
     getUser = async (column: string, value: string): Promise<any> => {
         try {

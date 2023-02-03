@@ -65,15 +65,4 @@ export class UserController {
             res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
         }
     }
-
-    
-    getAllUsers = async (req: Request, res: Response): Promise<void> => {
-        try {
-            const result = await this.userBusiness.getAllUsers()
-            res.status(200).send(result)
-
-        } catch (err: any) {
-            res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
-        }
-    }
 }
