@@ -7,9 +7,9 @@ export class MissingUserId extends CustomError {
     }
 }
 
-export class UserIdNotFound extends CustomError {
+export class UserNotFound extends CustomError {
     constructor () {
-        super(404, "O id do usuário não existe.")
+        super(404, "Usuário não encontrado.")
     }
 }
 
@@ -22,6 +22,24 @@ export class MissingUserName extends CustomError {
 export class MissingUserCpf extends CustomError {
     constructor () {
         super(422, "Informe o cpf do usuário.")
+    }
+}
+
+export class MissingPassword extends CustomError {
+    constructor () {
+        super(422, "Informe a senha do usuário.")
+    }
+}
+
+export class InvalidPassword extends CustomError {
+    constructor () {
+        super(422, "A senha deve ter pelo menos 8 caracteres.")
+    }
+}
+
+export class IncorrectPassword extends CustomError {
+    constructor () {
+        super(422, "Senha incorreta.")
     }
 }
 
@@ -55,12 +73,6 @@ export class DuplicateCpf extends CustomError {
     }
 }
 
-export class InvalidCpf extends CustomError {
-    constructor () {
-        super(422, "Cpf não encontrado no banco de dados.")
-    }
-}
-
 export class MissingBirthDate extends CustomError {
     constructor () {
         super(422, "Informe a data de nascimento do usuário.")
@@ -78,3 +90,16 @@ export class UserUnder18 extends CustomError {
         super(422, "O usuário deve ter no mínimo 18 anos.")
     }
 }
+
+export class Unauthorized extends CustomError {
+    constructor () {
+        super(401, "Usuário não autorizado.")
+    }
+}
+
+export class MissingToken extends CustomError {
+    constructor () {
+        super(401, "Informe o token de acesso.")
+    }
+}
+

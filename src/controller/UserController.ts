@@ -1,17 +1,55 @@
 import { Request, Response } from "express"
 import { UserBusiness } from "../business/UserBusiness"
-import { AddBalanceDTO } from "../models/AddBalanceDTO"
-import { BankTransferDTO } from "../models/BankTransferDTO"
-import { CreateBankAccountDTO } from "../models/CreateBankAccountDTO"
+import { inputAddBalanceDTO, loginInputDTO } from "../models/User"
+import { inputBankTransferDTO, inputSignUpDTO } from "../models/User"
 
 
 export class UserController {
+    constructor(private userBusiness: UserBusiness) {}
+
+
+    signup = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const input: inputSignUpDTO = {
+                name: req.body.name,
+                cpf: req.body.cpf,
+                birthDate: req.body.birthDate,
+                password: req.body.password
+            }
+
+            const token = await this.userBusiness.signup(input)
+            res.status(201).send({message: 'Conta criada com sucesso!', token})
+
+        } catch (err: any) {
+            res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
+        }
+    }
+
+
+    login = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const input: loginInputDTO = {
+                cpf: req.body.cpf,
+                password: req.body.password
+            }
+
+            const token = await this.userBusiness.login(input)
+            res.status(200).send({token})
+
+        } catch (err: any) {
+            res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
+        }
+    }
+
+
     addBalance = async (req: Request, res: Response): Promise<void> => {
         try {
-            const input: AddBalanceDTO = {cpf: req.body.cpf, value: req.body.value}
+            const input: inputAddBalanceDTO = {
+                value: req.body.value,
+                token: req.headers.authorization as string
+            }
 
-            const userBusiness = new UserBusiness()
-            await userBusiness.addBalance(input)
+            await this.userBusiness.addBalance(input)
 
             res.status(201).send('Saldo adicionado com sucesso!')
 
@@ -23,35 +61,15 @@ export class UserController {
 
     bankTransfer = async (req: Request, res: Response): Promise<void> => {
         try {
-            const input: BankTransferDTO = {
+            const input: inputBankTransferDTO = {
                 senderCpf: req.body.senderCpf,
                 receiverCpf: req.body.receiverCpf,
-                value: req.body.value
+                value: req.body.value,
+                token: req.headers.authorization as string
             }
 
-            const userBusiness = new UserBusiness()
-            await userBusiness.bankTransfer(input)
-
+            await this.userBusiness.bankTransfer(input)
             res.status(201).send('Transferência realizada com sucesso!')
-
-        } catch (err: any) {
-            res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
-        }
-    }
-
-
-    createBankAccount = async (req: Request, res: Response): Promise<void> => {
-        try {
-            const input: CreateBankAccountDTO = {
-                name: req.body.name,
-                cpf: req.body.cpf,
-                birthDate: req.body.birthDate
-            }
-
-            const userBusiness = new UserBusiness()
-            await userBusiness.createBankAccount(input)
-
-            res.status(201).send('Conta criada com sucesso!')
 
         } catch (err: any) {
             res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
@@ -61,12 +79,11 @@ export class UserController {
 
     deleteBankAccount = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id: number = Number(req.params.id)
+            const token = req.headers.authorization as string
 
-            const userBusiness = new UserBusiness()
-            await userBusiness.deleteBankAccount(id)
-
+            await this.userBusiness.deleteBankAccount(token)
             res.status(200).send('Conta deletada com sucesso!')
+
         } catch (err: any) {
             res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
         }
@@ -75,12 +92,11 @@ export class UserController {
 
     getAccountBalance = async (req: Request, res: Response): Promise<void> => {
         try {
-            const cpf: string = req.headers.cpf as string
+            const token = req.headers.authorization as string
 
-            const userBusiness = new UserBusiness()
-            const balance = await userBusiness.getAccountBalance(cpf)
-
+            const balance = await this.userBusiness.getAccountBalance(token)
             res.status(200).send(balance)
+
         } catch (err: any) {
             res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
         }
@@ -89,9 +105,7 @@ export class UserController {
     
     getAllUsers = async (req: Request, res: Response): Promise<void> => {
         try {
-            const userBusiness = new UserBusiness()
-            const result = await userBusiness.getAllUsers()
-
+            const result = await this.userBusiness.getAllUsers()
             res.status(200).send(result)
 
         } catch (err: any) {

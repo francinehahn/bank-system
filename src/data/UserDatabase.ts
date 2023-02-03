@@ -1,17 +1,14 @@
-import { AddBalanceDTO } from "../models/AddBalanceDTO"
-import { BankTransferDTO } from "../models/BankTransferDTO"
-import { ReturnBalanceDTO } from "../models/ReturnBalanceDTO"
-import User from "../models/User"
+import { User, inputBankTransferDTO, returnBalanceDTO, insertBalanceDTO } from "../models/User"
 import BaseDatabase from "./BaseDatabase"
 import { CustomError } from "../error/CustomError"
+import { UserRepository } from "../business/UserRepository"
 
 
-export default class UserDatabase extends BaseDatabase {
+export default class UserDatabase extends BaseDatabase implements UserRepository {
     
-    addBalance = async (input: AddBalanceDTO): Promise<void> => {
+    signup = async (newBankAccount: User): Promise<void> => {
         try {
-            const balance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", input.cpf)
-            await BaseDatabase.connection("BankClients").where("cpf", input.cpf).update("balance", balance[0].balance + Number(input.value))
+            await BaseDatabase.connection.insert(newBankAccount).into("BankClients")
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
@@ -19,7 +16,21 @@ export default class UserDatabase extends BaseDatabase {
     }
 
 
-    bankTransfer = async (input: BankTransferDTO): Promise<void> => {
+    addBalance = async (insertBalance: insertBalanceDTO): Promise<void> => {
+        try {
+            const balance = await BaseDatabase.connection("BankClients").select("balance").where("id", insertBalance.id)
+            
+            await BaseDatabase.connection("BankClients")
+            .where("id", insertBalance.id)
+            .update("balance", balance[0].balance + Number(insertBalance.value))
+
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    bankTransfer = async (input: inputBankTransferDTO): Promise<void> => {
         try {
             
             const senderBalance = await this.getAccountBalance(input.senderCpf)
@@ -39,17 +50,7 @@ export default class UserDatabase extends BaseDatabase {
     }
 
 
-    createBankAccount = async (newBankAccount: User): Promise<void> => {
-        try {
-            await BaseDatabase.connection.insert(newBankAccount).into("BankClients")
-
-        } catch (err: any) {
-            throw new CustomError(err.statusCode, err.message)
-        }
-    }
-
-
-    deleteBankAccount = async (id: number): Promise<void> => {
+    deleteBankAccount = async (id: string): Promise<void> => {
         try {
             await BaseDatabase.connection("BankClients").where("id", id).del()
             await BaseDatabase.connection("BankStatements").where("user_id", id).del()
@@ -60,9 +61,9 @@ export default class UserDatabase extends BaseDatabase {
     }
 
 
-    getAccountBalance = async (cpf: string): Promise<ReturnBalanceDTO> => {
+    getAccountBalance = async (id: string): Promise<returnBalanceDTO> => {
         try {
-            const balance = await BaseDatabase.connection("BankClients").select("balance").where("cpf", cpf)
+            const balance = await BaseDatabase.connection("BankClients").select("balance").where({id})
             return balance[0]
 
         } catch (err: any) {
@@ -81,27 +82,9 @@ export default class UserDatabase extends BaseDatabase {
     }
 
 
-    getUserByCpf = async (cpf: string): Promise<any> => {
+    getUser = async (column: string, value: string): Promise<any> => {
         try {
-            return await BaseDatabase.connection("BankClients").select().where("cpf", cpf)
-        } catch (err: any) {
-            throw new CustomError(err.statusCode, err.message)
-        }
-    }
-
-
-    getUserById = async (id: number): Promise<any> => {
-        try {
-            return await BaseDatabase.connection("BankClients").select().where("id", id)
-        } catch (err: any) {
-            throw new CustomError(err.statusCode, err.message)
-        }
-    }
-
-
-    getBankAccountById = async (id: number): Promise<any> => {
-        try {
-            return await BaseDatabase.connection("BankClients").select().where("id", id)
+            return await BaseDatabase.connection("BankClients").select().where(column, value)
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
         }

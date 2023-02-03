@@ -1,84 +1,17 @@
-import UserDatabase from "../data/UserDatabase"
 import { CustomError } from "../error/CustomError"
 import { InsufficientBalance, InvalidValue, MissingValue } from "../error/StatementErrors"
-import { DuplicateCpf, InvalidBirthDate, InvalidCpf, InvalidReceiverCpf, InvalidSenderCpf, MissingBirthDate, MissingReceiverCpf, MissingSenderCpf, MissingUserCpf, MissingUserId, MissingUserName, UserIdNotFound, UserUnder18 } from "../error/UserErrors"
-import { AddBalanceDTO } from "../models/AddBalanceDTO"
-import { BankTransferDTO } from "../models/BankTransferDTO"
-import { CreateBankAccountDTO } from "../models/CreateBankAccountDTO"
-import User from "../models/User"
+import { DuplicateCpf, IncorrectPassword, InvalidBirthDate, InvalidPassword, InvalidReceiverCpf, InvalidSenderCpf, MissingBirthDate, MissingPassword, MissingReceiverCpf, MissingSenderCpf, MissingToken, MissingUserCpf, MissingUserName, UserNotFound, UserUnder18 } from "../error/UserErrors"
+import { User, inputAddBalanceDTO, loginInputDTO, inputBankTransferDTO, inputSignUpDTO, insertBalanceDTO, returnBalanceDTO } from "../models/User"
+import { UserRepository } from "./UserRepository"
+import { Authenticator } from "../services/Authenticator"
+import { generateId } from "../services/generateId"
 
 
 export class UserBusiness {
-    addBalance = async (input: AddBalanceDTO): Promise<void> => {
-        try {
-            if (!input.cpf) {
-                throw new MissingUserCpf()          
-            }
-            
-            if (!input.value) {
-                throw new MissingValue()
-            }
-    
-            if (input.value <= 0) {
-                throw new InvalidValue()
-            }
-
-            const userDatabase = new UserDatabase()
-            const userExists = await userDatabase.getUserByCpf(input.cpf)
-            
-            if (userExists.length === 0) {
-                throw new InvalidCpf()         
-            }
-
-            await userDatabase.addBalance(input)
-
-        } catch (err: any) {
-            throw new CustomError(err.statusCode, err.message)
-        }
-    }
+    constructor(private userDatabase: UserRepository) {}
 
 
-    bankTransfer = async (input: BankTransferDTO): Promise<void> => {
-        try {
-            if (!input.senderCpf) {
-                throw new MissingSenderCpf()
-            }
-            if (!input.receiverCpf) {
-                throw new MissingReceiverCpf()
-            }
-            if (!input.value) {
-                throw new MissingValue()
-            }
-            if (input.value <= 0) {
-                throw new InvalidValue()
-            }
-
-            const userDatabase = new UserDatabase()
-
-            const senderCpfExists = await userDatabase.getUserByCpf(input.senderCpf)
-            if (senderCpfExists.length === 0) {
-                throw new InvalidSenderCpf()
-            }
-
-            const receiverCpfExists = await userDatabase.getUserByCpf(input.receiverCpf)
-            if (receiverCpfExists.length === 0) {
-                throw new InvalidReceiverCpf()
-            }
-
-            const senderBalance = await userDatabase.getAccountBalance(input.senderCpf)
-            if (senderBalance.balance < Number(input.value)) {
-                throw new InsufficientBalance()
-            }
-
-            await userDatabase.bankTransfer(input)
-
-        } catch (err: any) {
-            throw new CustomError(err.statusCode, err.message)
-        }
-    }
-
-
-    createBankAccount = async (input: CreateBankAccountDTO): Promise<void> => {
+    signup = async (input: inputSignUpDTO): Promise<string> => {
         try {
             const balance = 0
 
@@ -90,8 +23,7 @@ export class UserBusiness {
                 throw new MissingUserCpf()
             }
 
-            const userDatabase = new UserDatabase()
-            const cpfExists = await userDatabase.getUserByCpf(input.cpf)
+            const cpfExists = await this.userDatabase.getUser("cpf", input.cpf)
             
             if (cpfExists.length > 0) {
                 throw new DuplicateCpf()
@@ -99,6 +31,14 @@ export class UserBusiness {
     
             if (!input.birthDate) {
                 throw new MissingBirthDate()
+            }
+
+            if (!input.password) {
+                throw new MissingPassword()
+            }
+
+            if (input.password.length < 8) {
+                throw new InvalidPassword()
             }
     
             //checking whether the date was provided in the expected format (DD/MM/AAAA)
@@ -130,8 +70,14 @@ export class UserBusiness {
 
             input.birthDate = userBirthDate
             
-            const newBankAccount = new User(input.name, input.cpf, input.birthDate, balance)
-            await userDatabase.createBankAccount(newBankAccount)
+            const id = generateId() 
+            const newBankAccount = new User(id, input.name, input.cpf, input.birthDate, input.password, balance)
+            await this.userDatabase.signup(newBankAccount)
+
+            const authenticator = new Authenticator()
+            const token = await authenticator.generateToken({id})
+
+            return token
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
@@ -139,41 +85,140 @@ export class UserBusiness {
     }
 
 
-    deleteBankAccount = async (id: number): Promise<void> => {
+    async login (input: loginInputDTO): Promise<string> {
         try {
-            if (!id) {
-                throw new MissingUserId()
-            }
-
-            const userDatabase = new UserDatabase()
-            const idExists = await userDatabase.getBankAccountById(id)
-
-            if (idExists.length === 0) {
-                throw new UserIdNotFound()
-            }
-
-            await userDatabase.deleteBankAccount(id)
-
-        } catch (err: any) {
-            throw new CustomError(err.statusCode, err.message)
-        }
-    }
-
-
-    getAccountBalance = async (cpf: string): Promise<any> => {
-        try {
-            if (!cpf) {
+            if (!input.cpf) {
                 throw new MissingUserCpf()
             }
-
-            const userDatabase = new UserDatabase()
-
-            const cpfExists = await userDatabase.getUserByCpf(cpf)
-            if (cpfExists.length === 0) {
-                throw new InvalidCpf()
+            if (!input.password) {
+                throw new MissingPassword()
+            }
+            if (input.password.length < 8) {
+                throw new InvalidPassword()
             }
 
-            return await userDatabase.getAccountBalance(cpf)
+            const userExists = await this.userDatabase.getUser("cpf", input.cpf)
+
+            if (userExists.length === 0) {
+                throw new UserNotFound()
+            }
+           
+            if (input.password !== userExists[0].password) {
+                throw new IncorrectPassword()
+            }
+
+            const authenticator = new Authenticator()
+            const token = await authenticator.generateToken({id: userExists[0].id})
+
+            return token
+
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    addBalance = async (input: inputAddBalanceDTO): Promise<void> => {
+        try {            
+            if (!input.value) {
+                throw new MissingValue()
+            }
+    
+            if (input.value <= 0) {
+                throw new InvalidValue()
+            }
+
+            if (!input.token) {
+                throw new MissingToken()
+            }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(input.token)
+
+            const insertBalance: insertBalanceDTO = {
+                id,
+                value: input.value
+            }
+
+            await this.userDatabase.addBalance(insertBalance)
+
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    bankTransfer = async (input: inputBankTransferDTO): Promise<void> => {
+        try {
+            if (!input.senderCpf) {
+                throw new MissingSenderCpf()
+            }
+            if (!input.receiverCpf) {
+                throw new MissingReceiverCpf()
+            }
+            if (!input.value) {
+                throw new MissingValue()
+            }
+            if (input.value <= 0) {
+                throw new InvalidValue()
+            }
+            if (!input.token) {
+                throw new MissingToken()
+            }
+
+            const senderCpfExists = await this.userDatabase.getUser("cpf", input.senderCpf)
+            if (senderCpfExists.length === 0) {
+                throw new InvalidSenderCpf()
+            }
+
+            const receiverCpfExists = await this.userDatabase.getUser("cpf", input.receiverCpf)
+            if (receiverCpfExists.length === 0) {
+                throw new InvalidReceiverCpf()
+            }
+
+            const senderBalance = await this.userDatabase.getAccountBalance(input.senderCpf)
+            if (senderBalance.balance < Number(input.value)) {
+                throw new InsufficientBalance()
+            }
+
+            const authenticator = new Authenticator()
+            authenticator.getTokenData(input.token)
+
+            await this.userDatabase.bankTransfer(input)
+
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    deleteBankAccount = async (token: string): Promise<void> => {
+        try {
+            if (!token) {
+                throw new MissingToken()
+            }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(token)
+
+            await this.userDatabase.deleteBankAccount(id)
+
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    getAccountBalance = async (token: string): Promise<returnBalanceDTO> => {
+        try {
+            if (!token) {
+                throw new MissingToken()
+            }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(token)
+
+            return await this.userDatabase.getAccountBalance(id)
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
@@ -183,8 +228,7 @@ export class UserBusiness {
 
     getAllUsers = async (): Promise<User[]> => {
         try {
-            const userDatabase = new UserDatabase()
-            return await userDatabase.getAllUsers()
+            return await this.userDatabase.getAllUsers()
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
