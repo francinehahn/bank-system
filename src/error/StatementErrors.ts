@@ -30,3 +30,9 @@ export class InvalidPaymentDate extends CustomError {
         super(422, "Não é possível realizar pagamentos em uma data anterior ao dia de hoje.")
     }
 }
+
+export class NoStatementsFound extends CustomError {
+    constructor () {
+        super(404, "O usuário não realizou nenhuma movimentação na conta até o momento.")
+    }
+}

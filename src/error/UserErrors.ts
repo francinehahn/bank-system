@@ -43,21 +43,9 @@ export class IncorrectPassword extends CustomError {
     }
 }
 
-export class MissingSenderCpf extends CustomError {
-    constructor () {
-        super(422, 'É obrigatório fornecer o CPF do usuário que irá fazer a transferência.')
-    }
-}
-
 export class MissingReceiverCpf extends CustomError {
     constructor () {
         super(422, 'É obrigatório fornecer o CPF do usuário que irá receber a transferência.')
-    }
-}
-
-export class InvalidSenderCpf extends CustomError {
-    constructor () {
-        super(422, 'O CPF do usuário que irá fazer a transferência não existe.')
     }
 }
 

@@ -16,10 +16,6 @@ export class User {
     }
 }
 
-export interface returnBalanceDTO {
-    balance: number
-}
-
 export interface inputSignUpDTO {
     name: string,
     cpf: string,
@@ -32,19 +28,6 @@ export interface loginInputDTO {
     password: string
 }
 
-export interface inputBankTransferDTO {
-    senderCpf: string,
-    receiverCpf: string,
-    value: number,
-    token: string
-}
-
-export interface inputAddBalanceDTO {
-    value: number,
-    token: string
-}
-
-export interface insertBalanceDTO {
-    id: string,
-    value: number
+export interface returnBalanceDTO {
+    balance: number
 }

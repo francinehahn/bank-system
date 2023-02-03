@@ -1,7 +1,7 @@
 import { CustomError } from "../error/CustomError"
-import { InsufficientBalance, InvalidPaymentDate, InvalidValue, MissingDescription } from "../error/StatementErrors"
-import { MissingToken } from "../error/UserErrors"
-import { Statement, makePaymentsDTO } from "../models/Statement"
+import { InsufficientBalance, InvalidPaymentDate, InvalidValue, MissingDescription, MissingValue, NoStatementsFound } from "../error/StatementErrors"
+import { InvalidReceiverCpf, MissingReceiverCpf, MissingToken } from "../error/UserErrors"
+import { Statement, makePaymentsDTO, updateBalanceDTO, inputAddBalanceDTO, inputBankTransferDTO } from "../models/Statement"
 import { StatementRepository } from "./StatementRepository"
 import { UserRepository } from "./UserRepository"
 import { generateId } from "../services/generateId"
@@ -11,7 +11,7 @@ import { Authenticator } from "../services/Authenticator"
 export class StatementBusiness {
     constructor (private statementDatabase: StatementRepository, private userDatabase: UserRepository) {}
 
-    getStatementsById = async (token: string): Promise<Statement[]> => {
+    getUserStatements = async (token: string): Promise<Statement[]> => {
         try {
             if (!token) {
                 throw new MissingToken()
@@ -20,7 +20,97 @@ export class StatementBusiness {
             const authenticator = new Authenticator()
             const {id} = authenticator.getTokenData(token)
 
-            return await this.statementDatabase.getStatementsById(id)
+            const result = await this.statementDatabase.getUserStatements(id)
+            if (result.length === 0) {
+                throw new NoStatementsFound()
+            }
+
+            return result
+
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    addBalance = async (input: inputAddBalanceDTO): Promise<void> => {
+        try {            
+            if (!input.value) {
+                throw new MissingValue()
+            }
+    
+            if (input.value <= 0) {
+                throw new InvalidValue()
+            }
+
+            if (!input.token) {
+                throw new MissingToken()
+            }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(input.token)
+
+            const statementId = generateId()
+
+            let today = new Date()
+            today = new Date(`${today.getFullYear()}, ${today.getMonth() + 1}, ${today.getDate()}`)
+
+            const description = `Adição de crédito no valor de R$${input.value},00`
+            const newStatement = new Statement(statementId, input.value, today, description, id)
+
+            await this.statementDatabase.addBalance(newStatement)
+
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    bankTransfer = async (input: inputBankTransferDTO): Promise<void> => {
+        try {
+            if (!input.token) {
+                throw new MissingToken()
+            }
+            if (!input.receiverCpf) {
+                throw new MissingReceiverCpf()
+            }
+            if (!input.value) {
+                throw new MissingValue()
+            }
+            if (input.value <= 0) {
+                throw new InvalidValue()
+            }
+
+            const receiverCpfExists = await this.userDatabase.getUser("cpf", input.receiverCpf)
+            if (receiverCpfExists.length === 0) {
+                throw new InvalidReceiverCpf()
+            }
+
+            const receiverInformation = await this.userDatabase.getUser("cpf", input.receiverCpf)
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(input.token)
+
+            const userBalance = await this.userDatabase.getAccountBalance(id)
+            
+            if (userBalance.balance < Number(input.value)) {
+                throw new InsufficientBalance()
+            }
+
+            const updateBalance: updateBalanceDTO = {
+                receiverId: receiverInformation[0].id,
+                receiverBalance: receiverInformation[0].balance
+            }
+
+            const statementId = generateId()
+
+            let today = new Date()
+            today = new Date(`${today.getFullYear()}, ${today.getMonth() + 1}, ${today.getDate()}`)
+
+            const description = `Transferência de R$${input.value},00 para o cpf ${input.receiverCpf}`
+            const newStatement = new Statement(statementId, input.value, today, description, id)
+
+            await this.statementDatabase.bankTransfer(updateBalance, newStatement)
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
@@ -63,9 +153,9 @@ export class StatementBusiness {
 
             input.date = paymentDate
             
-            const userId = generateId()
-            const newStatement = new Statement(userId, input.value, input.date, input.description, user[0].id)
-            await this.statementDatabase.makePayments(input, newStatement)
+            const statementId = generateId()
+            const newStatement = new Statement(statementId, input.value, input.date, input.description, user[0].id)
+            await this.statementDatabase.makePayments(newStatement)
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)

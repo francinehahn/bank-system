@@ -11,8 +11,8 @@ const userController = new UserController(userBusiness)
 
 userRouter.get("/", userController.getAllUsers)
 userRouter.post("/", userController.signup)
+userRouter.delete("/", userController.deleteBankAccount)
+
 userRouter.post("/login", userController.login)
+
 userRouter.get("/balance", userController.getAccountBalance)
-userRouter.patch("/balance", userController.addBalance)
-userRouter.patch("/transfer", userController.bankTransfer)
-userRouter.delete("/:id", userController.deleteBankAccount)

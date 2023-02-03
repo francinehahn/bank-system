@@ -11,5 +11,7 @@ const userDatabase = new UserDatabase()
 const statementBusiness = new StatementBusiness(statementDatabase, userDatabase)
 const statementController = new StatementController(statementBusiness)
 
-statementRouter.get("/:id", statementController.getStatementsById) 
+statementRouter.get("/", statementController.getUserStatements) 
+statementRouter.post("/addBalance", statementController.addBalance)
+statementRouter.post("/transfer", statementController.bankTransfer)
 statementRouter.post("/payment", statementController.makePayments)

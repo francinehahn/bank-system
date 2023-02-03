@@ -1,7 +1,10 @@
-import { Statement, makePaymentsDTO } from "../models/Statement"
+import { Statement } from "../models/Statement"
+import { updateBalanceDTO } from "../models/Statement"
 
 
 export interface StatementRepository {
-    getStatementsById (id: string): Promise<Statement[]>
-    makePayments (input: makePaymentsDTO, newStatement: Statement): Promise<void>
+    getUserStatements (id: string): Promise<Statement[]>
+    addBalance (newStatement: Statement): Promise<void>
+    bankTransfer (updateBalance: updateBalanceDTO, newStatement: Statement): Promise<void>
+    makePayments (newStatement: Statement): Promise<void>
 }
