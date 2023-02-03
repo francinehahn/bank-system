@@ -144,7 +144,8 @@ export class StatementBusiness {
             let paymentDate = new Date(`${today.getFullYear()},${today.getMonth() + 1},${today.getDate()}`)
             
             if (input.date) {
-                if (input.date.valueOf() - new Date().valueOf() < 0) {
+               
+                if (paymentDate.valueOf() - new Date().valueOf() < 0) {
                     throw new InvalidPaymentDate()
                 }
 

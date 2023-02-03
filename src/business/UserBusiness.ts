@@ -4,6 +4,7 @@ import { User, loginInputDTO, inputSignUpDTO, returnBalanceDTO } from "../models
 import { UserRepository } from "./UserRepository"
 import { Authenticator } from "../services/Authenticator"
 import { generateId } from "../services/generateId"
+import { HashManager } from "../services/HashManager"
 
 
 export class UserBusiness {
@@ -68,8 +69,11 @@ export class UserBusiness {
 
             input.birthDate = userBirthDate
             
+            const hashManager = new HashManager()
+            const hashPassword: string = await hashManager.generateHash(input.password)
+
             const id = generateId() 
-            const newBankAccount = new User(id, input.name, input.cpf, input.birthDate, input.password, balance)
+            const newBankAccount = new User(id, input.name, input.cpf, input.birthDate, hashPassword, balance)
             await this.userDatabase.signup(newBankAccount)
 
             const authenticator = new Authenticator()
@@ -100,8 +104,11 @@ export class UserBusiness {
             if (userExists.length === 0) {
                 throw new UserNotFound()
             }
-           
-            if (input.password !== userExists[0].password) {
+
+            const hashManager = new HashManager()
+            const comparePassword = await hashManager.compareHash(input.password, userExists[0].password)
+
+            if (!comparePassword) {
                 throw new IncorrectPassword()
             }
 
