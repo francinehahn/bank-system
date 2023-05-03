@@ -12,14 +12,15 @@ API REST developed with the objective of simulating a banking system with severa
 https://documenter.getpostman.com/view/22375317/2s8YsxvBt8
 
 ## ☑️Requests
-- Get Account Balance
-- Get User Statements
 - Signup
 - Login
-- Make a Payment
+- Get Account Info
+- Get Account Balance
+- Get Bank Statements
+- Make A Payment
 - Add Balance
-- Make a Bank Transfer
-- Delete a Bank Account
+- Make A Bank Transfer
+- Delete Bank Account
 
 ## 💻Technologies
 - Node.js

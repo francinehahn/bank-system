@@ -9,9 +9,10 @@ const userDatabase = new UserDatabase()
 const userBusiness = new UserBusiness(userDatabase)
 const userController = new UserController(userBusiness)
 
-userRouter.post("/", userController.signup)
-userRouter.delete("/", userController.deleteBankAccount)
+userRouter.post("/", (req, res) => userController.signup(req, res))
+userRouter.delete("/", (req, res) => userController.deleteBankAccount(req, res))
 
-userRouter.post("/login", userController.login)
+userRouter.post("/login", (req, res) => userController.login(req, res))
 
-userRouter.get("/balance", userController.getAccountBalance)
+userRouter.get("/account", (req, res) => userController.getAccountInfo(req, res))
+userRouter.get("/balance", (req, res) => userController.getAccountBalance(req, res))

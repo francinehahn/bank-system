@@ -41,12 +41,11 @@ export class UserController {
     }
 
 
-    deleteBankAccount = async (req: Request, res: Response): Promise<void> => {
+    getAccountInfo = async (req: Request, res: Response): Promise<void> => {
         try {
             const token = req.headers.authorization as string
-
-            await this.userBusiness.deleteBankAccount(token)
-            res.status(201).send('Conta deletada com sucesso!')
+            const result = await this.userBusiness.getAccountInfo(token)
+            res.status(200).send(result)
 
         } catch (err: any) {
             res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
@@ -57,9 +56,21 @@ export class UserController {
     getAccountBalance = async (req: Request, res: Response): Promise<void> => {
         try {
             const token = req.headers.authorization as string
-
             const balance = await this.userBusiness.getAccountBalance(token)
             res.status(200).send(balance)
+
+        } catch (err: any) {
+            res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
+        }
+    }
+
+
+    deleteBankAccount = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const token = req.headers.authorization as string
+
+            await this.userBusiness.deleteBankAccount(token)
+            res.status(201).send('Conta deletada com sucesso!')
 
         } catch (err: any) {
             res.status(err.statusCode || 400).send(err.message || err.sqlMessage)
