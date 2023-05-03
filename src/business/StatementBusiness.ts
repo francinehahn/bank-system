@@ -140,16 +140,15 @@ export class StatementBusiness {
             }
 
             const today = new Date()
-            let paymentDate = new Date(`${today.getFullYear()},${today.getMonth() + 1},${today.getDate()}`)
-            
+            const formattedTodayDate = new Date(`${today.getFullYear()},${today.getMonth() + 1},${today.getDate()}`)
+            let paymentDate = formattedTodayDate
+
             if (input.date) {
-                const editedDate = new Date(input.date.split("/").reverse().join(","))
+                paymentDate = new Date(input.date.split("/").reverse().join(","))
                 
-                if (editedDate.valueOf() < today.valueOf()) {
+                if (paymentDate.valueOf() < formattedTodayDate.valueOf()) {
                     throw new InvalidPaymentDate()
                 }
-
-                paymentDate = editedDate 
             }
             
             const statementId = generateId()
