@@ -19,7 +19,7 @@ export class User {
 export interface inputSignUpDTO {
     name: string,
     cpf: string,
-    birthDate: Date,
+    birthDate: string,
     password: string
 }
 

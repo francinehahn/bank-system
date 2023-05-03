@@ -43,15 +43,15 @@ export class UserBusiness {
     
             //checking whether the date was provided in the expected format (DD/MM/AAAA)
             if (input.birthDate) {
-                const array = input.birthDate.toString().split("-")
-                const array2 = input.birthDate.toString().split("/")
+                const array = input.birthDate.split("-")
+                const array2 = input.birthDate.split("/")
     
                 if (array.length > 1 || Number(array2[0]) > 1000 || Number(array2[1]) > 12 || Number(array2[2]) < 1000) {
                     throw new InvalidBirthDate()
                 }
             }
 
-            const userBirthDate = new Date(input.birthDate.toString().split("/").reverse().join(","))
+            const userBirthDate = new Date(input.birthDate.split("/").reverse().join(","))
             let today = new Date()
 
             //User needs to be at least 18 to be able to create an account
@@ -66,14 +66,12 @@ export class UserBusiness {
                     }
                 }
             }
-
-            input.birthDate = userBirthDate
             
             const hashManager = new HashManager()
             const hashPassword: string = await hashManager.generateHash(input.password)
 
             const id = generateId() 
-            const newBankAccount = new User(id, input.name, input.cpf, input.birthDate, hashPassword, balance)
+            const newBankAccount = new User(id, input.name, input.cpf, userBirthDate, hashPassword, balance)
             await this.userDatabase.signup(newBankAccount)
 
             const authenticator = new Authenticator()
