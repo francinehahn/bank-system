@@ -1,6 +1,6 @@
 import { CustomError } from "../error/CustomError"
 import { InsufficientBalance, InvalidPaymentDate, InvalidValue, MissingDescription, MissingValue, NoStatementsFound } from "../error/StatementErrors"
-import { InvalidReceiverCpf, MissingReceiverCpf, MissingToken } from "../error/UserErrors"
+import { InvalidReceiverCpf, MissingReceiverCpf, MissingToken, ReceiverCpfNotFound } from "../error/UserErrors"
 import { Statement, makePaymentsDTO, updateBalanceDTO, inputAddBalanceDTO, inputBankTransferDTO, outputGetStatementsDTO } from "../models/Statement"
 import { StatementRepository } from "./StatementRepository"
 import { UserRepository } from "./UserRepository"
@@ -87,6 +87,11 @@ export class StatementBusiness {
 
             const receiverCpfExists = await this.userDatabase.getUser("cpf", input.receiverCpf)
             if (!receiverCpfExists) {
+                throw new ReceiverCpfNotFound()
+            }
+
+            const user = await this.userDatabase.getUser("id", id)
+            if (user!.cpf === receiverCpfExists.cpf) {
                 throw new InvalidReceiverCpf()
             }
 
