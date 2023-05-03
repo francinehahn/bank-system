@@ -36,3 +36,10 @@ export interface inputAddBalanceDTO {
     value: number,
     token: string
 }
+
+export interface outputGetStatementsDTO {
+    id: string,
+    value: number,
+    date: Date,
+    description: string,
+}
