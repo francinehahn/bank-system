@@ -1,9 +1,9 @@
 export class Statement {
-    private id: string
-    private value: number
-    private date: Date
-    private description: string
-    private user_id: string
+    readonly id: string
+    readonly value: number
+    readonly date: Date
+    readonly description: string
+    readonly user_id: string
 
     constructor (i: string, v: number, date: Date, desc: string, ui: string) {
         this.id = i
@@ -12,31 +12,11 @@ export class Statement {
         this.description = desc
         this.user_id = ui
     }
-
-    public getId() {
-        return this.id
-    }
-
-    public getDate() {
-        return this.date
-    }
-
-    public getDescription() {
-        return this.description
-    }
-
-    public getValue() {
-        return this.value
-    }
-
-    public getUserId() {
-        return this.user_id
-    }
 }
 
 export interface makePaymentsDTO {
     value: number,
-    date: Date,
+    date: string,
     description: string,
     token: string
 }

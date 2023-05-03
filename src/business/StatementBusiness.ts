@@ -118,6 +118,13 @@ export class StatementBusiness {
 
     makePayments = async (input: makePaymentsDTO): Promise<void> => {
         try {
+            if (!input.token) {
+                throw new MissingToken()
+            }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(input.token)
+
             if (input.value <= 0) {
                 throw new InvalidValue()
             }
@@ -126,12 +133,6 @@ export class StatementBusiness {
                 throw new MissingDescription()
             }
 
-            if (!input.token) {
-                throw new MissingToken()
-            }
-
-            const authenticator = new Authenticator()
-            const {id} = authenticator.getTokenData(input.token)
             const user = await this.userDatabase.getUser("id", id)
 
             if (Number(input.value) > user!.balance) {
@@ -142,17 +143,17 @@ export class StatementBusiness {
             let paymentDate = new Date(`${today.getFullYear()},${today.getMonth() + 1},${today.getDate()}`)
             
             if (input.date) {
-                if (paymentDate.valueOf() - new Date().valueOf() < 0) {
+                const editedDate = new Date(input.date.split("/").reverse().join(","))
+                
+                if (editedDate.valueOf() < today.valueOf()) {
                     throw new InvalidPaymentDate()
                 }
 
-                paymentDate = new Date(input.date.toString().split("/").reverse().join(","))
+                paymentDate = editedDate 
             }
-
-            input.date = paymentDate
             
             const statementId = generateId()
-            const newStatement = new Statement(statementId, input.value, input.date, input.description, user!.id)
+            const newStatement = new Statement(statementId, input.value, paymentDate, input.description, user!.id)
             await this.statementDatabase.makePayments(newStatement)
 
         } catch (err: any) {
