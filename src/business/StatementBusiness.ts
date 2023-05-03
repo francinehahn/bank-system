@@ -34,7 +34,14 @@ export class StatementBusiness {
 
 
     addBalance = async (input: inputAddBalanceDTO): Promise<void> => {
-        try {            
+        try {   
+            if (!input.token) {
+                throw new MissingToken()
+            }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(input.token)
+
             if (!input.value) {
                 throw new MissingValue()
             }
@@ -42,13 +49,6 @@ export class StatementBusiness {
             if (input.value <= 0) {
                 throw new InvalidValue()
             }
-
-            if (!input.token) {
-                throw new MissingToken()
-            }
-
-            const authenticator = new Authenticator()
-            const {id} = authenticator.getTokenData(input.token)
 
             const statementId = generateId()
 
@@ -71,6 +71,10 @@ export class StatementBusiness {
             if (!input.token) {
                 throw new MissingToken()
             }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(input.token)
+
             if (!input.receiverCpf) {
                 throw new MissingReceiverCpf()
             }
@@ -85,9 +89,6 @@ export class StatementBusiness {
             if (!receiverCpfExists) {
                 throw new InvalidReceiverCpf()
             }
-
-            const authenticator = new Authenticator()
-            const {id} = authenticator.getTokenData(input.token)
 
             const userBalance = await this.userDatabase.getAccountBalance(id)
             
@@ -139,14 +140,14 @@ export class StatementBusiness {
                 throw new InsufficientBalance()
             }
 
-            const today = new Date()
-            const formattedTodayDate = new Date(`${today.getFullYear()},${today.getMonth() + 1},${today.getDate()}`)
-            let paymentDate = formattedTodayDate
+            let today = new Date()
+            today = new Date(`${today.getFullYear()},${today.getMonth() + 1},${today.getDate()}`)
+            let paymentDate = today
 
             if (input.date) {
                 paymentDate = new Date(input.date.split("/").reverse().join(","))
                 
-                if (paymentDate.valueOf() < formattedTodayDate.valueOf()) {
+                if (paymentDate.valueOf() < today.valueOf()) {
                     throw new InvalidPaymentDate()
                 }
             }
