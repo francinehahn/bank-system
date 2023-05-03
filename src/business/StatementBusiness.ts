@@ -1,7 +1,7 @@
 import { CustomError } from "../error/CustomError"
 import { InsufficientBalance, InvalidPaymentDate, InvalidValue, MissingDescription, MissingValue, NoStatementsFound } from "../error/StatementErrors"
 import { InvalidReceiverCpf, MissingReceiverCpf, MissingToken } from "../error/UserErrors"
-import { Statement, makePaymentsDTO, updateBalanceDTO, inputAddBalanceDTO, inputBankTransferDTO } from "../models/Statement"
+import { Statement, makePaymentsDTO, updateBalanceDTO, inputAddBalanceDTO, inputBankTransferDTO, outputGetStatementsDTO } from "../models/Statement"
 import { StatementRepository } from "./StatementRepository"
 import { UserRepository } from "./UserRepository"
 import { generateId } from "../services/generateId"
@@ -11,7 +11,7 @@ import { Authenticator } from "../services/Authenticator"
 export class StatementBusiness {
     constructor (private statementDatabase: StatementRepository, private userDatabase: UserRepository) {}
 
-    getUserStatements = async (token: string): Promise<Statement[]> => {
+    getUserStatements = async (token: string): Promise<outputGetStatementsDTO[]> => {
         try {
             if (!token) {
                 throw new MissingToken()

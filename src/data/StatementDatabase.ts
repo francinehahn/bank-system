@@ -1,4 +1,4 @@
-import { Statement } from "../models/Statement"
+import { Statement, outputGetStatementsDTO } from "../models/Statement"
 import { CustomError } from "../error/CustomError"
 import BaseDatabase from "./BaseDatabase"
 import { StatementRepository } from "../business/StatementRepository"
@@ -6,9 +6,12 @@ import { updateBalanceDTO } from "../models/Statement"
 
 
 export default class StatementDatabase extends BaseDatabase implements StatementRepository {
-    getUserStatements = async (id: string): Promise<Statement[] | []> => {
+    getUserStatements = async (id: string): Promise<outputGetStatementsDTO[] | []> => {
         try {
-            return await BaseDatabase.connection("BankStatements").select().where("user_id", id)
+            return await BaseDatabase.connection("BankStatements")
+            .select("id", "value", "date", "description")
+            .where("user_id", id)
+            .orderBy("date")
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
