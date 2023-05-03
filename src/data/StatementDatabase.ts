@@ -11,7 +11,7 @@ export default class StatementDatabase extends BaseDatabase implements Statement
             return await BaseDatabase.connection("BankStatements")
             .select("id", "value", "date", "description")
             .where("user_id", id)
-            .orderBy("date")
+            .orderBy("date", "desc")
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
