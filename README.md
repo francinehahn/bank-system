@@ -14,7 +14,7 @@ https://documenter.getpostman.com/view/22375317/2s8YsxvBt8
 ## ☑️Requests
 - Get Account Balance
 - Get User Statements
-- Logout
+- Signup
 - Login
 - Make a Payment
 - Add Balance

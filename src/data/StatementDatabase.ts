@@ -3,11 +3,10 @@ import { CustomError } from "../error/CustomError"
 import BaseDatabase from "./BaseDatabase"
 import { StatementRepository } from "../business/StatementRepository"
 import { updateBalanceDTO } from "../models/Statement"
-import { returnBalanceDTO } from "../models/User"
 
 
 export default class StatementDatabase extends BaseDatabase implements StatementRepository {
-    getUserStatements = async (id: string): Promise<Statement[]> => {
+    getUserStatements = async (id: string): Promise<Statement[] | []> => {
         try {
             return await BaseDatabase.connection("BankStatements").select().where("user_id", id)
 
@@ -19,11 +18,11 @@ export default class StatementDatabase extends BaseDatabase implements Statement
     
     addBalance = async (newStatement: Statement): Promise<void> => {
         try {
-            const balance = await BaseDatabase.connection("BankClients").select("balance").where("id", newStatement.getUserId())
+            const balance = await BaseDatabase.connection("BankClients").select("balance").where("id", newStatement.user_id)
             
             await BaseDatabase.connection("BankClients")
-            .where("id", newStatement.getUserId())
-            .update("balance", balance[0].balance + newStatement.getValue())
+            .where("id", newStatement.user_id)
+            .update("balance", balance[0].balance + newStatement.value)
 
             await BaseDatabase.connection("BankStatements").insert(newStatement)
 
@@ -35,16 +34,15 @@ export default class StatementDatabase extends BaseDatabase implements Statement
 
     bankTransfer = async (updateBalance: updateBalanceDTO, newStatement: Statement): Promise<void> => {
         try {
-            
-            const senderBalance = await BaseDatabase.connection("BankClients").select().where("id", newStatement.getUserId())
+            const senderBalance = await BaseDatabase.connection("BankClients").select().where("id", newStatement.user_id)
             
             await BaseDatabase.connection("BankClients")
-            .where("id", newStatement.getUserId())
-            .update("balance", senderBalance[0].balance - newStatement.getValue())
+            .where("id", newStatement.user_id)
+            .update("balance", senderBalance[0].balance - newStatement.value)
             
             await BaseDatabase.connection("BankClients")
             .where("id", updateBalance.receiverId)
-            .update("balance", updateBalance.receiverBalance + newStatement.getValue())
+            .update("balance", updateBalance.receiverBalance + newStatement.value)
 
             await BaseDatabase.connection("BankStatements").insert(newStatement)
 
@@ -58,12 +56,12 @@ export default class StatementDatabase extends BaseDatabase implements Statement
         try {
             await BaseDatabase.connection("BankStatements").insert(newStatement)
             
-            const user = await BaseDatabase.connection("BankClients").select().where("id", newStatement.getUserId())
-            const timeOut = newStatement.getDate().valueOf() - new Date().valueOf()
+            const user = await BaseDatabase.connection("BankClients").select().where("id", newStatement.user_id)
+            const timeOut = newStatement.date.valueOf() - new Date().valueOf()
             
             setTimeout(async () => await BaseDatabase.connection("BankClients")
-            .where("id", newStatement.getUserId())
-            .update("balance", user[0].balance - Number(newStatement.getValue())), timeOut)
+            .where("id", newStatement.user_id)
+            .update("balance", user[0].balance - Number(newStatement.value)), timeOut)
             
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)

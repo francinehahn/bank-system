@@ -82,11 +82,9 @@ export class StatementBusiness {
             }
 
             const receiverCpfExists = await this.userDatabase.getUser("cpf", input.receiverCpf)
-            if (receiverCpfExists.length === 0) {
+            if (!receiverCpfExists) {
                 throw new InvalidReceiverCpf()
             }
-
-            const receiverInformation = await this.userDatabase.getUser("cpf", input.receiverCpf)
 
             const authenticator = new Authenticator()
             const {id} = authenticator.getTokenData(input.token)
@@ -98,8 +96,8 @@ export class StatementBusiness {
             }
 
             const updateBalance: updateBalanceDTO = {
-                receiverId: receiverInformation[0].id,
-                receiverBalance: receiverInformation[0].balance
+                receiverId: receiverCpfExists.id,
+                receiverBalance: receiverCpfExists.balance
             }
 
             const statementId = generateId()
@@ -120,6 +118,13 @@ export class StatementBusiness {
 
     makePayments = async (input: makePaymentsDTO): Promise<void> => {
         try {
+            if (!input.token) {
+                throw new MissingToken()
+            }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(input.token)
+
             if (input.value <= 0) {
                 throw new InvalidValue()
             }
@@ -128,34 +133,26 @@ export class StatementBusiness {
                 throw new MissingDescription()
             }
 
-            if (!input.token) {
-                throw new MissingToken()
-            }
-
-            const authenticator = new Authenticator()
-            const {id} = authenticator.getTokenData(input.token)
             const user = await this.userDatabase.getUser("id", id)
 
-            if (Number(input.value) > user[0].balance) {
+            if (Number(input.value) > user!.balance) {
                 throw new InsufficientBalance()
             }
 
             const today = new Date()
-            let paymentDate = new Date(`${today.getFullYear()},${today.getMonth() + 1},${today.getDate()}`)
-            
+            const formattedTodayDate = new Date(`${today.getFullYear()},${today.getMonth() + 1},${today.getDate()}`)
+            let paymentDate = formattedTodayDate
+
             if (input.date) {
-               
-                if (paymentDate.valueOf() - new Date().valueOf() < 0) {
+                paymentDate = new Date(input.date.split("/").reverse().join(","))
+                
+                if (paymentDate.valueOf() < formattedTodayDate.valueOf()) {
                     throw new InvalidPaymentDate()
                 }
-
-                paymentDate = new Date(input.date.toString().split("/").reverse().join(","))
             }
-
-            input.date = paymentDate
             
             const statementId = generateId()
-            const newStatement = new Statement(statementId, input.value, input.date, input.description, user[0].id)
+            const newStatement = new Statement(statementId, input.value, paymentDate, input.description, user!.id)
             await this.statementDatabase.makePayments(newStatement)
 
         } catch (err: any) {

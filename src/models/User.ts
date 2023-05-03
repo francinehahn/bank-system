@@ -1,10 +1,10 @@
 export class User {
-    private id: string
-    private name: string
-    private cpf: string
-    private birth_Date: Date
-    private password: string
-    private balance: number
+    readonly id: string
+    readonly name: string
+    readonly cpf: string
+    readonly birth_Date: Date
+    readonly password: string
+    readonly balance: number
 
     constructor (i: string, n: string, cpf: string, bd: Date, p: string, b: number) {
         this.id = i
@@ -19,7 +19,7 @@ export class User {
 export interface inputSignUpDTO {
     name: string,
     cpf: string,
-    birthDate: Date,
+    birthDate: string,
     password: string
 }
 
