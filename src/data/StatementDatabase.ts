@@ -3,11 +3,10 @@ import { CustomError } from "../error/CustomError"
 import BaseDatabase from "./BaseDatabase"
 import { StatementRepository } from "../business/StatementRepository"
 import { updateBalanceDTO } from "../models/Statement"
-import { returnBalanceDTO } from "../models/User"
 
 
 export default class StatementDatabase extends BaseDatabase implements StatementRepository {
-    getUserStatements = async (id: string): Promise<Statement[]> => {
+    getUserStatements = async (id: string): Promise<Statement[] | []> => {
         try {
             return await BaseDatabase.connection("BankStatements").select().where("user_id", id)
 
@@ -35,7 +34,6 @@ export default class StatementDatabase extends BaseDatabase implements Statement
 
     bankTransfer = async (updateBalance: updateBalanceDTO, newStatement: Statement): Promise<void> => {
         try {
-            
             const senderBalance = await BaseDatabase.connection("BankClients").select().where("id", newStatement.getUserId())
             
             await BaseDatabase.connection("BankClients")
