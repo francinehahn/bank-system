@@ -31,3 +31,10 @@ export interface loginInputDTO {
 export interface returnBalanceDTO {
     balance: number
 }
+
+export interface outputGetAccountInfoDTO {
+    id: string,
+    name: string,
+    cpf: string,
+    birth_date: string
+}

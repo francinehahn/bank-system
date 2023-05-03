@@ -1,6 +1,6 @@
 import { CustomError } from "../error/CustomError"
 import { DuplicateCpf, IncorrectPassword, InvalidBirthDate, InvalidPassword, MissingBirthDate, MissingPassword, MissingToken, MissingUserCpf, MissingUserName, UserNotFound, UserUnder18 } from "../error/UserErrors"
-import { User, loginInputDTO, inputSignUpDTO, returnBalanceDTO } from "../models/User"
+import { User, loginInputDTO, inputSignUpDTO, returnBalanceDTO, outputGetAccountInfoDTO } from "../models/User"
 import { UserRepository } from "./UserRepository"
 import { Authenticator } from "../services/Authenticator"
 import { generateId } from "../services/generateId"
@@ -121,7 +121,7 @@ export class UserBusiness {
     }
 
 
-    deleteBankAccount = async (token: string): Promise<void> => {
+    getAccountInfo = async (token: string): Promise<outputGetAccountInfoDTO> => {
         try {
             if (!token) {
                 throw new MissingToken()
@@ -130,7 +130,7 @@ export class UserBusiness {
             const authenticator = new Authenticator()
             const {id} = authenticator.getTokenData(token)
 
-            await this.userDatabase.deleteBankAccount(id)
+            return await this.userDatabase.getAccountInfo(id)
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
@@ -148,6 +148,23 @@ export class UserBusiness {
             const {id} = authenticator.getTokenData(token)
 
             return await this.userDatabase.getAccountBalance(id)
+
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    deleteBankAccount = async (token: string): Promise<void> => {
+        try {
+            if (!token) {
+                throw new MissingToken()
+            }
+
+            const authenticator = new Authenticator()
+            const {id} = authenticator.getTokenData(token)
+
+            await this.userDatabase.deleteBankAccount(id)
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)

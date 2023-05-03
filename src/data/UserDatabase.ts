@@ -1,4 +1,4 @@
-import { User, returnBalanceDTO } from "../models/User"
+import { User, outputGetAccountInfoDTO, returnBalanceDTO } from "../models/User"
 import BaseDatabase from "./BaseDatabase"
 import { CustomError } from "../error/CustomError"
 import { UserRepository } from "../business/UserRepository"
@@ -16,10 +16,20 @@ export default class UserDatabase extends BaseDatabase implements UserRepository
     }
 
 
-    deleteBankAccount = async (id: string): Promise<void> => {
+    getUser = async (column: string, value: string): Promise<User | undefined> => {
         try {
-            await BaseDatabase.connection("BankStatements").where("user_id", id).del()
-            await BaseDatabase.connection("BankClients").where("id", id).del()
+            const result = await BaseDatabase.connection("BankClients").select().where(column, value)
+            return result[0]
+        } catch (err: any) {
+            throw new CustomError(err.statusCode, err.message)
+        }
+    }
+
+
+    getAccountInfo = async (id: string): Promise<outputGetAccountInfoDTO> => {
+        try {
+            const result = await BaseDatabase.connection("BankClients").select("id", "name", "cpf", "birth_date").where({id})
+            return result[0]
 
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
@@ -38,10 +48,11 @@ export default class UserDatabase extends BaseDatabase implements UserRepository
     }
 
 
-    getUser = async (column: string, value: string): Promise<User | undefined> => {
+    deleteBankAccount = async (id: string): Promise<void> => {
         try {
-            const result = await BaseDatabase.connection("BankClients").select().where(column, value)
-            return result[0]
+            await BaseDatabase.connection("BankStatements").where("user_id", id).del()
+            await BaseDatabase.connection("BankClients").where("id", id).del()
+
         } catch (err: any) {
             throw new CustomError(err.statusCode, err.message)
         }
