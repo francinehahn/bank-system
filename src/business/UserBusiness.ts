@@ -25,7 +25,7 @@ export class UserBusiness {
 
             const cpfExists = await this.userDatabase.getUser("cpf", input.cpf)
             
-            if (cpfExists.length > 0) {
+            if (cpfExists) {
                 throw new DuplicateCpf()
             }
     
@@ -101,19 +101,19 @@ export class UserBusiness {
 
             const userExists = await this.userDatabase.getUser("cpf", input.cpf)
 
-            if (userExists.length === 0) {
+            if (!userExists) {
                 throw new UserNotFound()
             }
 
             const hashManager = new HashManager()
-            const comparePassword = await hashManager.compareHash(input.password, userExists[0].password)
+            const comparePassword = await hashManager.compareHash(input.password, userExists.password)
 
             if (!comparePassword) {
                 throw new IncorrectPassword()
             }
 
             const authenticator = new Authenticator()
-            const token = await authenticator.generateToken({id: userExists[0].id})
+            const token = await authenticator.generateToken({id: userExists.id})
 
             return token
 
