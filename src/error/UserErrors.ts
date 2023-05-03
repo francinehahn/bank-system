@@ -49,15 +49,21 @@ export class MissingReceiverCpf extends CustomError {
     }
 }
 
+export class ReceiverCpfNotFound extends CustomError {
+    constructor () {
+        super(404, 'O CPF do usuário que irá receber a transferência não existe.')
+    }
+}
+
 export class InvalidReceiverCpf extends CustomError {
     constructor () {
-        super(422, 'O CPF do usuário que irá receber a transferência não existe.')
+        super(404, 'O CPF do usuário que irá receber a transferência não pode ser o mesmo cpf do usuário que irá realizar a transferência.')
     }
 }
 
 export class DuplicateCpf extends CustomError {
     constructor () {
-        super(422, "Cpf já cadastrado no banco de dados.")
+        super(409, "Cpf já cadastrado no banco de dados.")
     }
 }
 
@@ -87,7 +93,7 @@ export class Unauthorized extends CustomError {
 
 export class MissingToken extends CustomError {
     constructor () {
-        super(401, "Informe o token de acesso.")
+        super(422, "Informe o token de acesso.")
     }
 }
 
